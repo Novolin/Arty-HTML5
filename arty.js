@@ -596,16 +596,18 @@ class MenuItem {
     canvas = game.render.cvx; 
 
     //methods:
-    constructor(posx, posy, rectx, recty, label){
+    constructor(posx, posy, rectx, recty, label, border = 5){
         this.posx = posx;
         this.posy = posy;
         this.rectx = rectx;
         this.recty = recty;
         this.label = label;
+        this.border = border;
     }
 
-    draw(){
+    draw(renderer){
         //Place the item on the screen
+
     }
 
 
