@@ -17,6 +17,13 @@ const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
 let game; 
 
+// Set colours
+const terminal_green = `rgb(120,255,80)`;
+const red = `rgb(250,0,0)`;
+const blue = `rgb(0,0,250)`;
+
+
+
 //Extablish game ticks, event listener.
 setInterval(gameTick, 50);
 
@@ -576,12 +583,26 @@ class cannon extends gameObject {
 }
 //Menu/UI things:
 class menu {
-    //Attributes:
+    
     items;
+    title_text;
+    visible = true;
+    font = "64px monospace";
+    renderer;
+    constructor(title, render_target){
+        this.title_text = title;
+        this.renderer = render_target;
+
+    }
+
+    draw(){
+
+    }
+
     
 }
 class MenuItem {
-    //positional Attributes:
+    //positional data:
     posx;
     posy;
     rectx;
@@ -603,10 +624,12 @@ class MenuItem {
         this.recty = recty;
         this.label = label;
         this.border = border;
+        this.label_x = (this.posx + this.rectx) / 2;
     }
 
-    draw(renderer){
+    draw(){
         //Place the item on the screen
+        this.canvas.rect(this.posx, this.posy, this.rectx, this.recty)
 
     }
 
