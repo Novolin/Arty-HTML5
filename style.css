@@ -1,0 +1,14 @@
+html {
+    background-color: black;
+    color:bisque;
+}
+canvas#game {
+    border: 1px white;
+    border-style: solid;
+    min-width: 300;
+    min-height: 300;
+    max-width: 800;
+    max-height: 600;
+    height: 80%;
+    width: 80%;
+}
