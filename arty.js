@@ -779,6 +779,7 @@ function playerFire(){
 }
 function showStartMenu(){
     menu = new gameMenu("BROWSER ARTILLERY", document.getElementById("game").getContext("2d"));
+    menu.draw()
 }
 function parseMouseClick(e){
     /* handles clickable stuff */
@@ -797,4 +798,4 @@ inputButton.addEventListener("click", playerFire);
 
 
 // show the menu on game start
-document.onload = menu.draw();
+document.onload = showStartMenu();
