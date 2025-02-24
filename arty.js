@@ -778,7 +778,7 @@ function parseMouseClick(e){
     if (menu){
         // for now just output to console because fffff
         for (const key in menu) {
-            if (menu[key].checkCollide(e.offsetx, e.offsety)){
+            if (menu[key].checkCollide(e.offsetX, e.offsetY)){
                 console.log(key);
                 console.log("CLICKEDEDED IT");
             }
