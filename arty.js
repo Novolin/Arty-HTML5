@@ -16,6 +16,7 @@ const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
 const canvasContainer = document.getElementById("game");
+const canvasTarget = document.getElementById("game").getContext("2d")
 let game = false; 
 let menu = false;
 
@@ -267,15 +268,15 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
         super(posx, posy, renderer);
     }
     //methods
-    draw(canvas){ //destroy the ground at this point, replacing the sprite and removing collision.
+    draw(){ //destroy the ground at this point, replacing the sprite and removing collision.
 
-        canvas.fillStyle = "black";
-        canvas.strokeStyle = "black";
-        canvas.beginPath();
-        canvas.moveTo(this.posx, this.posy);
-        canvas.arc(this.posx, this.posy, 15, 3.14, 3.139);
-        canvas.fill();
-        canvas.closePath();
+        canvasTarget.fillStyle = "black";
+        canvasTarget.strokeStyle = "black";
+        canvasTarget.beginPath();
+        canvasTarget.moveTo(this.posx, this.posy);
+        canvasTarget.arc(this.posx, this.posy, 15, 3.14, 3.139);
+        canvasTarget.fill();
+        canvasTarget.closePath();
     }
 
 }
@@ -290,15 +291,15 @@ class explosion extends gameObject{
             this.renderer = renderer;
         }
         //methods
-        draw(canvas){ //do a flashy flashy :)
+        draw(){ //do a flashy flashy :)
     
-            canvas.fillStyle = this.colour;
-            canvas.strokeStyle = this.colour;
-            canvas.beginPath();
-            canvas.moveTo(this.posx, this.posy);
-            canvas.arc(this.posx, this.posy, 15, 3.14, 3.139);
-            canvas.fill();
-            canvas.closePath();
+            canvasTarget.fillStyle = this.colour;
+            canvasTarget.strokeStyle = this.colour;
+            canvasTarget.beginPath();
+            canvasTarget.moveTo(this.posx, this.posy);
+            canvasTarget.arc(this.posx, this.posy, 15, 3.14, 3.139);
+            canvasTarget.fill();
+            canvasTarget.closePath();
         }
         physicsTick(){
             //use this to advance the timers/change colours.
@@ -371,10 +372,12 @@ class bullet extends gameObject {
         if (this.velx < 0){
             for (let checkX = this.posx; checkX >= nextX; checkX--){
                 const checkY = this.posy - Math.floor((checkX - this.posx) * slope);
-                const targetBox = game.render.cvx.getImageData(checkX, checkY,1,1);
+                const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
                 const targetData = targetBox.data;
                 
-                if (targetData[1] == 255) { //if we hit ground, set the detection point as where we did
+                if (targetData[1] == 255) { 
+                    // If we hit ground, put the point at the ground/sky transition.
+
                     this.posx = checkX;
                     this.posy = checkY;
                     if (!this.owner){
@@ -408,9 +411,9 @@ class bullet extends gameObject {
 
     }
 
-    draw(renderer){
-        renderer.fillStyle = `rgb(200,200,0)`;
-        renderer.fillRect(this.posx, this.posy, 4,4) //make a circle later
+    draw(){
+        canvasTarget.fillStyle = `rgb(200,200,0)`;
+        canvasTarget.fillRect(this.posx, this.posy, 4,4) //make a circle later
     }
     
 }
@@ -457,25 +460,25 @@ class cannon extends gameObject {
         game.turnOver = true; //flag the turn as finished
     }
 
-    draw(renderer){ //draw the cannon on the screen
+    draw(){ //draw the cannon on the screen
         if (this.alive){
-            renderer.fillStyle = this.colour;
-            renderer.strokeStyle = this.colour;
-            renderer.lineWidth = 1;
-            renderer.beginPath();
-            renderer.moveTo(this.posx, this.posy);
-            renderer.arc(this.posx, this.posy, 10,Math.PI,3.14);
-            renderer.fill();
-            renderer.closePath();
-            renderer.lineWidth = "4";
-            renderer.beginPath();
-            renderer.moveTo(this.posx, this.posy - 5);
+            canvasTarget.fillStyle = this.colour;
+            canvasTarget.strokeStyle = this.colour;
+            canvasTarget.lineWidth = 1;
+            canvasTarget.beginPath();
+            canvasTarget.moveTo(this.posx, this.posy);
+            canvasTarget.arc(this.posx, this.posy, 10,Math.PI,3.14);
+            canvasTarget.fill();
+            canvasTarget.closePath();
+            canvasTarget.lineWidth = "4";
+            canvasTarget.beginPath();
+            canvasTarget.moveTo(this.posx, this.posy - 5);
             //calculate where the line should go:
             let drawAngle = getRadians(-this.angle);
             let barrelX = (this.posx + (20 * Math.cos(drawAngle))); //first number is barrel length
             let barrelY = (this.posy + (20 * Math.sin(drawAngle)));
-            renderer.lineTo(barrelX,barrelY); //draw a little line for the barrel
-            renderer.stroke();
+            canvasTarget.lineTo(barrelX,barrelY); //draw a little line for the barrel
+            canvasTarget.stroke();
         }
     }
     AIGetAim(){
@@ -602,20 +605,19 @@ class gameMenu {
     title_text;
     visible = true;
     font = "64px monospace";
-    constructor(title, render_target){
+    constructor(title){
         this.title_text = title;
-        this.renderer = render_target;
         this.items.push(new menuItem(400, 300, 100,100, "New Game"));
     }
 
     draw(){
         // Draw menu and its children
-        this.renderer.fillStyle = colour_green;
-        this.renderer.font = this.font;
-        this.renderer.textAlign = "center";
-        this.renderer.fillText(this.title_text, 400, 80);
+        canvasTarget.fillStyle = colour_green;
+        canvasTarget.font = this.font;
+        canvasTarget.textAlign = "center";
+        canvasTarget.fillText(this.title_text, 400, 80);
         for (const key in this.items) { // Draw each button
-            this.items[key].draw(this.renderer);
+            this.items[key].draw();
         }
     }
 
@@ -647,10 +649,10 @@ class menuItem {
         this.label_x = (this.posx + this.rectx) / 2;
     }
 
-    draw(canvas){
+    draw(){
         //Place the item on the screen
-        canvas.strokeStyle = colour_green;
-        canvas.strokeRect(this.posx, this.posy, this.rectx, this.recty)
+        canvasTarget.strokeStyle = colour_green;
+        canvasTarget.strokeRect(this.posx, this.posy, this.rectx, this.recty)
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
@@ -676,7 +678,7 @@ function randint(min, max){
 function getRadians(angle){
     return angle * (Math.PI / 180);
 }
-
+// Collision: 
 function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
     /* 
     Checks if a point at (pointX, pointY) falls within a circle of radius at (circleX, circleY)
@@ -756,7 +758,7 @@ function gameTick(){
                 game.things[i].physicsTick(); //give it a physics tick just to make it work and do collision stuff
                 
             }
-            game.things[i].draw(game.render.cvx);
+            game.things[i].draw();
         }
 
     } else if (game.gameState = "start"){
@@ -785,7 +787,7 @@ function parseMouseClick(e){
 }
 
 inputButton.addEventListener("click", playerFire);
-//canvasContainer.addEventListener("mousemove", mouseshit);
+
 
 //fire the loading script on game start.
 document.onload = showStartMenu();
