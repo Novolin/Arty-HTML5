@@ -607,7 +607,7 @@ class gameMenu {
     font = "64px monospace";
     constructor(title){
         this.title_text = title;
-        this.items.push(new menuItem(400, 300, 100,100, "New Game"));
+        this.items.push(new menuItem(350, 300, 100,100, "New Game"));
     }
 
     draw(){
@@ -654,6 +654,8 @@ class menuItem {
         //Place the item on the screen
         canvasTarget.strokeStyle = colour_green;
         canvasTarget.strokeRect(this.posx, this.posy, this.rectx, this.recty)
+        canvasTarget.font = this.font
+        canvasTarget.text(this.label, this.posx + (this.rectx / 2), this.posy)
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
@@ -794,5 +796,5 @@ function parseMouseClick(e){
 inputButton.addEventListener("click", playerFire);
 
 
-//fire the loading script on game start.
-document.onload = showStartMenu();
+// show the menu on game start
+document.onload = menu.draw();
