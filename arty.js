@@ -16,8 +16,8 @@ const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
 const canvasContainer = document.getElementById("game");
-let game; 
-let menu;
+let game = false; 
+let menu = false;
 
 // Set colours
 const colour_green = `rgb(120,255,80)`;
@@ -649,7 +649,16 @@ class menuItem {
     draw(){
         //Place the item on the screen
         this.canvas.rect(this.posx, this.posy, this.rectx, this.recty)
-
+    }
+    checkCollide(pointX, pointY){
+        /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
+        if (pointX < this.posx | pointX > this.posx + this.rectx){
+            return false;
+        } else if (pointY < this.posy | pointY > this.posy + this.recty){
+            return false;
+        } else {
+            return true;
+        }
     }
 
 
@@ -666,7 +675,7 @@ function getRadians(angle){
     return angle * (Math.PI / 180);
 }
 
-function isInCircle(pointX, pointY, circleX, circleY, radius){
+function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
     /* 
     Checks if a point at (pointX, pointY) falls within a circle of radius at (circleX, circleY)
     */
@@ -681,6 +690,7 @@ function isInCircle(pointX, pointY, circleX, circleY, radius){
         return true;
     }
 }
+
 
 function nextTurn(){
     switch (game.nextTurn) {
@@ -759,7 +769,18 @@ function playerFire(){
 function showStartMenu(){
     menu = new gameMenu("BROWSER ARTILLERY", document.getElementById("game").getContext("2d"));
 }
-
+function parseMouseClick(e){
+    /* handles clickable stuff */
+    if (menu){
+        // for now just output to console because fffff
+        for (const key in menu) {
+            if (menu[key].checkCollide(e.offsetx, e.offsety)){
+                console.log(key);
+                console.log("CLICKEDEDED IT");
+            }
+        }
+    }
+}
 
 inputButton.addEventListener("click", playerFire);
 //canvasContainer.addEventListener("mousemove", mouseshit);
