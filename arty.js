@@ -1,6 +1,6 @@
 /*********************
  * BROWSER ARTILLERY *
- *       V 0.6       *
+ *      V 0.6.1      *
  *    NOW WITH AI!   *
  ********************/
 
@@ -584,7 +584,7 @@ class cannon extends gameObject {
 //Menu/UI things:
 class menu {
     
-    items = [new MenuItem(400, 300, 100,100, "New Game")];
+    items = [];
     title_text;
     visible = true;
     font = "64px monospace";
@@ -592,13 +592,17 @@ class menu {
     constructor(title, render_target){
         this.title_text = title;
         this.renderer = render_target;
+        this.items.push(new MenuItem(400, 300, 100,100, "New Game"));
     }
 
     draw(){
         // Draw menu and its children
-        this.renderer.fontMode = this.font;
-        this.renderer.text(title_text);
-
+        this.renderer.font = this.font;
+        this.renderer.textAlign = "center";
+        this.renderer.fillText(title_text, 400, 80);
+        for (const key in this.items) { // Draw each button
+            key.draw();
+        }
     }
 
     
