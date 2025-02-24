@@ -1,7 +1,7 @@
 /*********************
  * BROWSER ARTILLERY *
- *      V 0.6.1      *
- *    NOW WITH AI!   *
+ *       V 0.7       *
+ *  THE RE-RENDERING *
  ********************/
 
 
@@ -15,6 +15,7 @@ const windowSizeY = gameWindow.innerHeight;
 const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
+const canvasContainer = document.getElementById("game");
 let game; 
 let menu;
 
@@ -22,6 +23,8 @@ let menu;
 const colour_green = `rgb(120,255,80)`;
 const colour_red = `rgb(250,0,0)`;
 const colour_blue = `rgb(0,0,250)`;
+
+
 
 
 
@@ -60,10 +63,10 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         }
     }
 
-    //Methods
+
 
     /********
-     * INPUT
+     * INPUT *
      ********/
 
     enableControls(){ //fire upon game/turn start.
@@ -241,9 +244,11 @@ class gameObject {
     //Attributes:
     posx;
     posy;
-    constructor(posx,posy){
+    renderer;
+    constructor(posx,posy, renderer){
         this.posx = posx;
         this.posy = posy;
+        this.renderer = renderer;
     }
 
     //Methods
@@ -258,19 +263,19 @@ class gameObject {
 class groundHole extends gameObject { //holes are counted as a type of object, so we can handle drawing them as the screen flips
     //Attributes are inherited
 
-    constructor(posx,posy){
-        super(posx, posy);
+    constructor(posx,posy, renderer){
+        super(posx, posy, renderer);
     }
     //methods
     draw(){ //destroy the ground at this point, replacing the sprite and removing collision.
 
-        game.render.cvx.fillStyle = "black";
-        game.render.cvx.strokeStyle = "black";
-        game.render.cvx.beginPath();
-        game.render.cvx.moveTo(this.posx, this.posy);
-        game.render.cvx.arc(this.posx, this.posy, 15, 3.14, 3.139);
-        game.render.cvx.fill();
-        game.render.cvx.closePath();
+        this.renderer.fillStyle = "black";
+        this.renderer.strokeStyle = "black";
+        this.renderer.beginPath();
+        this.renderer.moveTo(this.posx, this.posy);
+        this.renderer.arc(this.posx, this.posy, 15, 3.14, 3.139);
+        this.renderer.fill();
+        this.renderer.closePath();
     }
 
 }
@@ -278,21 +283,22 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
 class explosion extends gameObject{
         animFrame;
         colour;
-        constructor(posx,posy, radius){
+        constructor(posx,posy, radius, renderer){
             super(posx, posy);
             this.radius = radius; //do some shit about make the circle i guess
             this.animFrame = 0;
+            this.renderer = renderer;
         }
         //methods
         draw(){ //do a flashy flashy :)
     
-            game.render.cvx.fillStyle = this.colour;
-            game.render.cvx.strokeStyle = this.colour;
-            game.render.cvx.beginPath();
-            game.render.cvx.moveTo(this.posx, this.posy);
-            game.render.cvx.arc(this.posx, this.posy, 15, 3.14, 3.139);
-            game.render.cvx.fill();
-            game.render.cvx.closePath();
+            this.renderer.fillStyle = this.colour;
+            this.renderer.strokeStyle = this.colour;
+            this.renderer.beginPath();
+            this.renderer.moveTo(this.posx, this.posy);
+            this.renderer.arc(this.posx, this.posy, 15, 3.14, 3.139);
+            this.renderer.fill();
+            this.renderer.closePath();
         }
         physicsTick(){
             //use this to advance the timers/change colours.
@@ -300,7 +306,7 @@ class explosion extends gameObject{
             if (this.animFrame == 0){ //check on the first go if there's a player in the explosion
                 //inscribe a square in the circle, roughly:
 
-                let checkSq = game.render.cvx.getImageData(this.posx - Math.ceil((10 * Math.sqrt(2))/ 2), this.posy - Math.ceil((10 * Math.sqrt(2))/ 2), this.posx + Math.ceil((10 * Math.sqrt(2))/ 2), this.posy + Math.ceil((10 * Math.sqrt(2))/ 2));
+                let checkSq = this.renderer.getImageData(this.posx - Math.ceil((10 * Math.sqrt(2))/ 2), this.posy - Math.ceil((10 * Math.sqrt(2))/ 2), this.posx + Math.ceil((10 * Math.sqrt(2))/ 2), this.posy + Math.ceil((10 * Math.sqrt(2))/ 2));
                 for (let pixdata = 0; pixdata < checkSq.length; pixdata++){
                     if (checkSq[pixdata][0] == 255){
                         //if you see a pixel of cannon in one of these, blow it up
@@ -709,7 +715,10 @@ function gameStart(){
 
 function gameTick(){
     //execute a logic tick
-    if (game.gameState = "game"){
+    if (game == undefined){
+        return;
+    }
+    if (game.gameState == "game"){
         //purge anything in the shadow realm:
         game.things = game.things.filter((thing) => thing.posx > 0)
 
@@ -752,6 +761,8 @@ function showStartMenu(){
 }
 
 
-inputButton.addEventListener("click", playerFire)
+inputButton.addEventListener("click", playerFire);
+//canvasContainer.addEventListener("mousemove", mouseshit);
+
 //fire the loading script on game start.
 document.onload = showStartMenu();
