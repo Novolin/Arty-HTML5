@@ -633,7 +633,7 @@ class menuItem {
     hover;
     colour;
     clicked;
-    canvas = game.render.cvx; 
+    canvas = document.getElementById("game").getContext("2d"); 
 
     //methods:
     constructor(posx, posy, rectx, recty, label, border = 5){
