@@ -16,6 +16,7 @@ const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
 let game; 
+let menu;
 
 // Set colours
 const colour_green = `rgb(120,255,80)`;
@@ -590,7 +591,7 @@ class cannon extends gameObject {
     }
 }
 //Menu/UI things:
-class menu {
+class gameMenu {
     items = [];
     title_text;
     visible = true;
@@ -598,7 +599,7 @@ class menu {
     constructor(title, render_target){
         this.title_text = title;
         this.renderer = render_target;
-        this.items.push(new MenuItem(400, 300, 100,100, "New Game"));
+        this.items.push(new menuItem(400, 300, 100,100, "New Game"));
     }
 
     draw(){
@@ -613,7 +614,7 @@ class menu {
 
     
 }
-class MenuItem {
+class menuItem {
     //positional data:
     posx;
     posy;
@@ -656,8 +657,23 @@ function randint(min, max){
 }
 
 function getRadians(angle){
-    var pi = Math.PI;
-    return angle * (pi / 180);
+    return angle * (Math.PI / 180);
+}
+
+function isInCircle(pointX, pointY, circleX, circleY, radius){
+    /* 
+    Checks if a point at (pointX, pointY) falls within a circle of radius at (circleX, circleY)
+    */
+    let distanceX = Math.abs(circleX - pointX);
+    let distanceY = Math.abs(circleY - pointY);
+    if (distanceX > radius | distanceY > radius) {
+        return false;
+    }
+    if (Math.sqrt((distanceX ** 2) + (distanceY ** 2)) > radius){
+        return false;
+    } else {
+        return true;
+    }
 }
 
 function nextTurn(){
@@ -731,7 +747,11 @@ function playerFire(){
         game.things[0].fire();
     }
 }
+function showStartMenu(){
+    menu = new gameMenu("BROWSER ARTILLERY", document.getElementById("game").getContext("2d"));
+}
+
 
 inputButton.addEventListener("click", playerFire)
 //fire the loading script on game start.
-document.onload = gameStart();
+document.onload = showStartMenu();
