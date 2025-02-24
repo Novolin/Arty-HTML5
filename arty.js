@@ -636,6 +636,7 @@ class menuItem {
     hover;
     colour;
     clicked;
+    clickAction = "none"
 
 
     //methods:
@@ -663,6 +664,10 @@ class menuItem {
         } else {
             return true;
         }
+    }
+
+    onClick(){
+        //do whatever you need to
     }
 
 
