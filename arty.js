@@ -20,9 +20,9 @@ let game = false;
 let menu = false;
 
 // Set colours
-const colour_green = `rgb(120,255,80)`;
-const colour_red = `rgb(250,0,0)`;
-const colour_blue = `rgb(0,0,250)`;
+const colour_green = `rgba(120,255,80,255)`;
+const colour_red = `rgba(250,0,0,255)`;
+const colour_blue = `rgba(0,0,250,255)`;
 
 
 
@@ -648,7 +648,8 @@ class menuItem {
 
     draw(){
         //Place the item on the screen
-        this.canvas.rect(this.posx, this.posy, this.rectx, this.recty)
+        this.canvas.strokeStyle = colour_green;
+        this.canvas.strokeRect(this.posx, this.posy, this.rectx, this.recty)
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
