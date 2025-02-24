@@ -167,7 +167,7 @@ class gameRender { //this class handles all of the rendering functions for the g
     drawObjs(){
         // Draws every object in our
         for (const key in this.visibleObjects) {
-            key.draw() // Each object should have its own draw call which points to the canvas object
+            key.draw(this.canvas) // Each object should have its own draw call which requests our canvas
         }
     }
 }
@@ -267,15 +267,15 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
         super(posx, posy, renderer);
     }
     //methods
-    draw(){ //destroy the ground at this point, replacing the sprite and removing collision.
+    draw(canvas){ //destroy the ground at this point, replacing the sprite and removing collision.
 
-        this.renderer.fillStyle = "black";
-        this.renderer.strokeStyle = "black";
-        this.renderer.beginPath();
-        this.renderer.moveTo(this.posx, this.posy);
-        this.renderer.arc(this.posx, this.posy, 15, 3.14, 3.139);
-        this.renderer.fill();
-        this.renderer.closePath();
+        canvas.fillStyle = "black";
+        canvas.strokeStyle = "black";
+        canvas.beginPath();
+        canvas.moveTo(this.posx, this.posy);
+        canvas.arc(this.posx, this.posy, 15, 3.14, 3.139);
+        canvas.fill();
+        canvas.closePath();
     }
 
 }
@@ -290,15 +290,15 @@ class explosion extends gameObject{
             this.renderer = renderer;
         }
         //methods
-        draw(){ //do a flashy flashy :)
+        draw(canvas){ //do a flashy flashy :)
     
-            this.renderer.fillStyle = this.colour;
-            this.renderer.strokeStyle = this.colour;
-            this.renderer.beginPath();
-            this.renderer.moveTo(this.posx, this.posy);
-            this.renderer.arc(this.posx, this.posy, 15, 3.14, 3.139);
-            this.renderer.fill();
-            this.renderer.closePath();
+            canvas.fillStyle = this.colour;
+            canvas.strokeStyle = this.colour;
+            canvas.beginPath();
+            canvas.moveTo(this.posx, this.posy);
+            canvas.arc(this.posx, this.posy, 15, 3.14, 3.139);
+            canvas.fill();
+            canvas.closePath();
         }
         physicsTick(){
             //use this to advance the timers/change colours.
@@ -610,11 +610,12 @@ class gameMenu {
 
     draw(){
         // Draw menu and its children
+        this.renderer.fillStyle = colour_green;
         this.renderer.font = this.font;
         this.renderer.textAlign = "center";
-        this.renderer.fillText(title_text, 400, 80);
+        this.renderer.fillText(this.title_text, 400, 80);
         for (const key in this.items) { // Draw each button
-            key.draw();
+            this.items[key].draw(this.renderer);
         }
     }
 
@@ -633,7 +634,7 @@ class menuItem {
     hover;
     colour;
     clicked;
-    canvas = document.getElementById("game").getContext("2d"); 
+
 
     //methods:
     constructor(posx, posy, rectx, recty, label, border = 5){
@@ -646,10 +647,10 @@ class menuItem {
         this.label_x = (this.posx + this.rectx) / 2;
     }
 
-    draw(){
+    draw(canvas){
         //Place the item on the screen
-        this.canvas.strokeStyle = colour_green;
-        this.canvas.strokeRect(this.posx, this.posy, this.rectx, this.recty)
+        canvas.strokeStyle = colour_green;
+        canvas.strokeRect(this.posx, this.posy, this.rectx, this.recty)
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
