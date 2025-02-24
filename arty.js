@@ -18,9 +18,9 @@ const inputButton = document.getElementById("fireInput");
 let game; 
 
 // Set colours
-const terminal_green = `rgb(120,255,80)`;
-const red = `rgb(250,0,0)`;
-const blue = `rgb(0,0,250)`;
+const colour_green = `rgb(120,255,80)`;
+const colour_red = `rgb(250,0,0)`;
+const colour_blue = `rgb(0,0,250)`;
 
 
 
@@ -584,7 +584,7 @@ class cannon extends gameObject {
 //Menu/UI things:
 class menu {
     
-    items;
+    items = [new MenuItem(400, 300, 100,100, "New Game")];
     title_text;
     visible = true;
     font = "64px monospace";
@@ -592,10 +592,12 @@ class menu {
     constructor(title, render_target){
         this.title_text = title;
         this.renderer = render_target;
-
     }
 
     draw(){
+        // Draw menu and its children
+        this.renderer.fontMode = this.font;
+        this.renderer.text(title_text);
 
     }
 
