@@ -130,33 +130,41 @@ class gameData { //papa object, handles the game and its logic, holding everythi
 
 
 class gameRender { //this class handles all of the rendering functions for the game.
-    cvx;
+    canvas;
     showMap;
     showMenu;
+    visibleObjects;
     constructor(){
-        this.cvx = document.getElementById("game").getContext("2d", {willReadFrequently:true});
+        this.canvas = document.getElementById("game").getContext("2d", {willReadFrequently:true});
     }
 
     drawGeography(sizex, sizey, geoData) {
         //Wipe existing screen data:
-        this.cvx.fillStyle = "black";
-        this.cvx.fillRect(0,0,sizex, sizey);
+        this.canvas.fillStyle = "black";
+        this.canvas.fillRect(0,0,sizex, sizey);
 
         //draw the geography as a trace:
-        this.cvx.fillStyle = `rgba(0,255,0,255)`;
-        this.cvx.strokeStyle = `rgba(0,255,0,255)`;
-        this.cvx.beginPath();
-        this.cvx.moveTo(geoData[0][0], geoData[0][1]);
+        this.canvas.fillStyle = colour_green;
+        this.canvas.strokeStyle = colour_green;
+        this.canvas.beginPath();
+        this.canvas.moveTo(geoData[0][0], geoData[0][1]);
         let pointCount = 1;
         while (pointCount < geoData.length){
-            this.cvx.lineTo(geoData[pointCount][0],geoData[pointCount][1]);
+            this.canvas.lineTo(geoData[pointCount][0],geoData[pointCount][1]);
             pointCount ++;
         }
         //After drawing the contours, fill the ground:
-        this.cvx.lineTo(sizex, sizey);
-        this.cvx.lineTo(0,sizey);
-        this.cvx.lineTo(geoData[0][0], geoData[0][1]);
-        this.cvx.fill(); 
+        this.canvas.lineTo(sizex, sizey);
+        this.canvas.lineTo(0,sizey);
+        this.canvas.lineTo(geoData[0][0], geoData[0][1]);
+        this.canvas.fill(); 
+    }
+
+    drawObjs(){
+        // Draws every object in our
+        for (const key in this.visibleObjects) {
+            key.draw() // Each object should have its own draw call which points to the canvas object
+        }
     }
 }
 
@@ -583,12 +591,10 @@ class cannon extends gameObject {
 }
 //Menu/UI things:
 class menu {
-    
     items = [];
     title_text;
     visible = true;
     font = "64px monospace";
-    renderer;
     constructor(title, render_target){
         this.title_text = title;
         this.renderer = render_target;
