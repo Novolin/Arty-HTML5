@@ -655,7 +655,7 @@ class menuItem {
         canvasTarget.strokeStyle = colour_green;
         canvasTarget.strokeRect(this.posx, this.posy, this.rectx, this.recty)
         canvasTarget.font = this.font
-        canvasTarget.text(this.label, this.posx + (this.rectx / 2), this.posy)
+        canvasTarget.fillText(this.label, this.posx + (this.rectx / 2), this.posy)
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
