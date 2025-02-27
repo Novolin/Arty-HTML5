@@ -750,7 +750,7 @@ function gameStart(){
 
 function gameTick(){
     //execute a logic tick
-    if (gamestate == "start"){ // we are on the "new game" menu
+    if (gameState == "start"){ // we are on the "new game" menu
         menu.draw_if_needed();
     }
 
