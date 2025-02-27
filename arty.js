@@ -609,7 +609,7 @@ class gameMenu {
     font = "64px monospace";
     constructor(title){
         this.title_text = title;
-        this.items.push(new menuItem(350, 300, 100,100, "New Game"));
+        this.items.push(new menuItem(250, 300, 200,150, "PLAY"));
     }
 
     draw(){
@@ -617,7 +617,7 @@ class gameMenu {
         canvasTarget.fillStyle = colour_green;
         canvasTarget.font = this.font;
         canvasTarget.textAlign = "center";
-        canvasTarget.fillText(this.title_text, 400, 80);
+        canvasTarget.fillText(this.title_text, 400, 150);
         for (const key in this.items) { // Draw each button
             this.items[key].draw();
         }
@@ -633,7 +633,7 @@ class menuItem {
     recty;
     //Text:
     label;
-    font = "24px monospace";
+    font = "48px monospace";
     //appearance/interaction
     hover;
     colour;
