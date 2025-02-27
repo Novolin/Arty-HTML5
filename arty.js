@@ -7,20 +7,22 @@
 
 
 
-//Variables and Constants:
-const gravity = 1;
+// page and canvas-related objects
 const gameWindow = document.defaultView;
 const windowSizeX = gameWindow.innerWidth;
 const windowSizeY = gameWindow.innerHeight;
 const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
-const canvasContainer = document.getElementById("game");
-const canvasTarget = document.getElementById("game").getContext("2d")
+const canvasContainer = document.getElementById("game"); 
+const canvasTarget = document.getElementById("game").getContext("2d"); // the actual 2d canvas object
+
+// game-related objs
+const gravity = 1;
 let game = false; 
 let menu = false;
+let gamestate = "start"; // are we looking at the start menu, gameplay or game over menu?
 
-// Set colours
 const colour_green = `rgba(120,255,80,255)`;
 const colour_red = `rgba(250,0,0,255)`;
 const colour_blue = `rgba(0,0,250,255)`;
@@ -732,6 +734,7 @@ function nextTurn(){
 
 function gameStart(){
     game = new gameData();
+    menu = undefined; // disable the menu
 }
 
 function gameTick(){
@@ -778,9 +781,9 @@ function playerFire(){
     }
 }
 function showStartMenu(){
-    menu = new gameMenu("BROWSER ARTILLERY", document.getElementById("game").getContext("2d"));
+    menu = new gameMenu("BROWSER ARTILLERY", canvasTarget);
     menu.draw()
-    menu.addEventListener("mouseup", parseMouseClick)
+    addEventListener("mouseup", parseMouseClick)
 }
 function parseMouseClick(e){
     /* handles clickable stuff */
@@ -790,7 +793,7 @@ function parseMouseClick(e){
             if (menu[key].checkCollide(e.offsetX, e.offsetY)){
                 console.log(key);
                 console.log("CLICKEDEDED IT");
-                console.log(menu[key])
+                console.log(menu[key]);
             }
         }
     }
