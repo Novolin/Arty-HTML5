@@ -782,15 +782,15 @@ function playerFire(){
 }
 function showStartMenu(){
     menu = new gameMenu("BROWSER ARTILLERY", canvasTarget);
-    menu.draw()
-    addEventListener("mouseup", parseMouseClick)
+    menu.draw();
+    addEventListener("mouseup", parseMouseClick);
 }
 function parseMouseClick(e){
     /* handles clickable stuff */
     if (menu){
         // for now just output to console because fffff
         for (const key in menu.items) {
-            if (menu[key].checkCollide(e.offsetX, e.offsetY)){
+            if (menu.items[key].checkCollide(e.offsetX, e.offsetY)){
                 console.log(key);
                 console.log("CLICKEDEDED IT");
                 console.log(menu[key]);
