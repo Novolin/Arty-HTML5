@@ -665,7 +665,7 @@ class menuItem {
         canvasTarget.strokeStyle = colour_green;
         canvasTarget.strokeRect(this.posx, this.posy, this.rectx, this.recty)
         canvasTarget.font = this.font
-        canvasTarget.fillText(this.label, this.posx + (this.rectx / 2), this.posy)
+        canvasTarget.fillText(this.label, this.posx + (this.rectx / 2), this.posy + (this.recty / 2))
     }
     checkCollide(pointX, pointY){
         /* checks if a point collides with a rectangle with origin (rectX, rectY)*/
@@ -799,13 +799,14 @@ function showStartMenu(){
 }
 function parseMouseClick(e){
     /* handles clickable stuff */
-    if (menu){
+    if (menu & e.button == 0){
         // for now just output to console because fffff
         for (const key in menu.items) {
             if (menu.items[key].checkCollide(e.offsetX, e.offsetY)){
                 console.log(key);
                 console.log("CLICKEDEDED IT");
-                console.log(menu[key]);
+                console.log(menu.items[key]);
+                
             }
         }
     }
