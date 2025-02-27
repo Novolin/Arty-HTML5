@@ -179,6 +179,7 @@ class gameMap { //class that holds map generation/display data
     sizey;
     mapPoints;
     mapObjects;
+    path = new Path2D();
     //Constructor
     constructor(){ 
         this.sizex = 800;
@@ -186,8 +187,11 @@ class gameMap { //class that holds map generation/display data
         this.mapPoints = this.generateMap();
         this.mapObjects = []; //this will hold things like players, holes, etc. 
     }
-    //Methods
-    generateMap(){ //returns a list of points that the map can interpolate to generate itself
+    
+    generateMap(){
+        /* Creates the path2d object which will represent our terrain.
+        * returns it as well as saving to this.path
+        */
         let noMansLand = [(this.sizex * 0.2), (this.sizex * 0.8)]; //get the borders of the flattening zones
         let finalPoints =[]; //what we'll return
         let checkPoint = 0; //Where we're starting a line (x)
@@ -234,9 +238,26 @@ class gameMap { //class that holds map generation/display data
             finalPoints.push([getNextX, getNextY]); //Push our pair of coordinates to the array, and set the loop for next round.
             checkPoint = getNextX;
         }
-        return finalPoints;
+        // add our points to the path 
+        this.path.moveTo(800,600);
+        this.path.lineTo(0,600)
+        for (p in finalPoints){
+            this.path.lineTo(p[0],p[1]);
+        }
+        this.path.closePath();
+
+        return this.path
     }
     
+    draw(){
+        /* Draw the map to the canvas object*/
+        // Set our colours:
+        canvasTarget.fillStyle = colour_green;
+        canvasTarget.strokeStyle = colour_green;
+        canvasTarget.lineJoin("round");
+        canvasTarget.fill(this.path);
+    }
+
 }
 
 
@@ -246,10 +267,9 @@ class gameObject {
     posx;
     posy;
     renderer;
-    constructor(posx,posy, renderer){
+    constructor(posx,posy){
         this.posx = posx;
         this.posy = posy;
-        this.renderer = renderer;
     }
 
     //Methods
@@ -263,20 +283,20 @@ class gameObject {
 
 class groundHole extends gameObject { //holes are counted as a type of object, so we can handle drawing them as the screen flips
     //Attributes are inherited
-
-    constructor(posx,posy, renderer){
-        super(posx, posy, renderer);
+    path = new Path2D();
+    radius;
+    constructor(posx,posy, radius){
+        super(posx, posy);
+        this.radius = radius
+        this.path.moveTo(posx, posy);
+        this.path.arc(this.posx, this.posy, this.radius, 0, 2*Math.PI);
+        this.path.closePath();
     }
     //methods
-    draw(){ //destroy the ground at this point, replacing the sprite and removing collision.
-
+    draw(){ //destroy the ground at this point, by drawing a black circle over it. 
         canvasTarget.fillStyle = "black";
         canvasTarget.strokeStyle = "black";
-        canvasTarget.beginPath();
-        canvasTarget.moveTo(this.posx, this.posy);
-        canvasTarget.arc(this.posx, this.posy, 15, 3.14, 3.139);
-        canvasTarget.fill();
-        canvasTarget.closePath();
+        canvasTarget.fill(this.path);
     }
 
 }
@@ -289,20 +309,22 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
 class explosion extends gameObject{
         animFrame;
         colour;
-        constructor(posx,posy, radius, renderer){
+        radius;
+        constructor(posx,posy, radius){
             super(posx, posy);
-            this.radius = radius; //do some shit about make the circle i guess
+            this.radius = radius; 
             this.animFrame = 0;
-            this.renderer = renderer;
+            this.radius = radius
+            
         }
         //methods
-        draw(){ //do a flashy flashy :)
+        draw(){ // TODO: make this nice.
     
             canvasTarget.fillStyle = this.colour;
             canvasTarget.strokeStyle = this.colour;
             canvasTarget.beginPath();
             canvasTarget.moveTo(this.posx, this.posy);
-            canvasTarget.arc(this.posx, this.posy, 15, 3.14, 3.139);
+            canvasTarget.arc(this.posx, this.posy, this.radius, 0, 2* Math.PI);
             canvasTarget.fill();
             canvasTarget.closePath();
         }
