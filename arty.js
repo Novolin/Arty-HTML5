@@ -607,6 +607,7 @@ class gameMenu {
     title_text;
     visible = true;
     font = "64px monospace";
+    refreshNeeded = true;
     constructor(title){
         this.title_text = title;
         this.items.push(new menuItem(250, 300, 200,150, "PLAY"));
@@ -620,6 +621,13 @@ class gameMenu {
         canvasTarget.fillText(this.title_text, 400, 150);
         for (const key in this.items) { // Draw each button
             this.items[key].draw();
+        }
+    }
+
+    draw_if_needed(){
+        if (this.refreshNeeded){
+            this.draw();
+            this.refreshNeeded = false;
         }
     }
 
@@ -739,6 +747,10 @@ function gameStart(){
 
 function gameTick(){
     //execute a logic tick
+    if (gamestate == "start"){ // we are on the "new game" menu
+        menu.draw_if_needed();
+    }
+
     if (game == undefined){
         return;
     }
