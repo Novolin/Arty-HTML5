@@ -21,7 +21,7 @@ const canvasTarget = document.getElementById("game").getContext("2d"); // the ac
 const gravity = 1;
 let game = false; 
 let menu = false;
-let gamestate = "start"; // are we looking at the start menu, gameplay or game over menu?
+let gameState = "start"; // are we looking at the start menu, gameplay or game over menu?
 
 const colour_green = `rgba(120,255,80,255)`;
 const colour_red = `rgba(250,0,0,255)`;
@@ -42,7 +42,6 @@ setInterval(gameTick, 50);
 
 class gameData { //papa object, handles the game and its logic, holding everything nice and neat like
     currentTurn;
-    gameState;
     render;
     map;
     things;
@@ -50,7 +49,6 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     turnOver;
 
     constructor(){
-        this.gameState = "game"; //are win in a game or menu
         this.currentTurn = 0; //Which turn is going on
         this.map = new gameMap();
         this.render = new gameRender();
@@ -74,7 +72,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
 
     enableControls(){ //fire upon game/turn start.
         gameWindow.addEventListener("keyup", (fireKeyAction) => {
-            if (this.gameState == "game"){ //only handle these when we're in "game" mode.
+            if (gameState == "game"){ //only handle these when we're in "game" mode.
                 if (fireKeyAction.key == "ArrowUp"){
                     //increase shot angle
                     this.things[0].angle ++;
@@ -135,7 +133,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     
 }
 
-
+/* TODO: REWRITE */
 class gameRender { //this class handles all of the rendering functions for the game.
     canvas;
     showMap;
@@ -283,6 +281,11 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
 
 }
 
+
+/* TODO: REWRITE 
+*  Make them grow in size and then shrink
+* 
+*/
 class explosion extends gameObject{
         animFrame;
         colour;
@@ -314,7 +317,7 @@ class explosion extends gameObject{
                     if (checkSq[pixdata][0] == 255){
                         //if you see a pixel of cannon in one of these, blow it up
                         game.things[0].alive = false;
-                        //play some kind of 
+                        
                     }
                 }
             }
@@ -754,7 +757,7 @@ function gameTick(){
     if (game == undefined){
         return;
     }
-    if (game.gameState == "game"){
+    if (game){
         //purge anything in the shadow realm:
         game.things = game.things.filter((thing) => thing.posx > 0)
 
@@ -799,7 +802,7 @@ function showStartMenu(){
 }
 function parseMouseClick(e){
     /* handles clickable stuff */
-    if (menu & e.button == 0){
+    if (menu && e.button == 0){
         // for now just output to console because fffff
         for (const key in menu.items) {
             if (menu.items[key].checkCollide(e.offsetX, e.offsetY)){
