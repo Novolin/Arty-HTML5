@@ -331,7 +331,7 @@ class bullet extends gameObject {
             checkX = Math.floor(checkX)
             const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
             const targetData = targetBox.data;
-            console.log(targetData) // TEMP: SO I KNOW IF ICAN JUST LOOK FR COLLRRR
+            console.log(targetBox) // TEMP: SO I KNOW IF ICAN JUST LOOK FR COLLRRR
             if (targetData[1] == 255) { //if we hit ground, set the detection point as where we did
                 this.posx = checkX;
                 this.posy = checkY;
@@ -349,7 +349,7 @@ class bullet extends gameObject {
                 const checkY = this.posy - Math.floor((checkX - this.posx) * slope);
                 const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
                 const targetData = targetBox.data;
-                
+                console.log(targetBox)
                 if (targetData[1] == 255) { 
                     // If we hit ground, put the point at the ground/sky transition.
 
