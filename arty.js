@@ -23,6 +23,7 @@ let game = false;
 let menu = false;
 let gameState = "start"; // are we looking at the start menu, gameplay or game over menu?
 
+
 const colour_green = `rgba(120,255,80,255)`;
 const colour_red = `rgba(250,0,0,255)`;
 const colour_blue = `rgba(0,0,250,255)`;
@@ -34,11 +35,6 @@ const colour_blue = `rgba(0,0,250,255)`;
 //Extablish game ticks, event listener.
 setInterval(gameTick, 50);
 
-/*****************************************************************************
- * WELCOME TO CLASS TOWN
- * RIGHT HERE WE GOT US OUR MAIN DATA CLASSES YOURS FOR ONLY A FEW KB OF RAM
- * OBJECT ORIENTED PROGRAMMING YEEEEEEEEE HAAAAAAAW
- ****************************************************************************/
 
 class gameData { //papa object, handles the game and its logic, holding everything nice and neat like
     currentTurn = 0;
@@ -46,6 +42,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     things;
     nextTurn = 1;
     turnOver = false;
+    phyiscsObject = false; // which object should we detect physics on.
 
     constructor(){
         this.currentTurn = 0; //Which turn is going on
@@ -109,11 +106,19 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         } else {
             return new cannon(false, spawnX, spawnY, "blue");
         }
-        
-
     }
 
-    
+    physicsTick(){
+        /* Run a physics tick on the current physics object. */
+        if (this.physicsObject == false){ 
+            // just do nothing if there's no active object.
+            return false;
+        }
+        let nextCollide = this.physicsObject.checkCollide()
+        if (nextCollide){
+            // Should be a reference to a specific pixel? idk yet.
+        }
+    }
     
 }
 
