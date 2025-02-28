@@ -326,6 +326,10 @@ class bullet extends gameObject {
 
         //check pixels in a line until the landing position
         const slope = this.vely/this.velx;
+
+        //DEBUG: DRAW BEFORE WE CHECK
+        this.draw();
+
         for (let checkX = this.posx; checkX <= nextX; checkX++){
             const checkY = this.posy + Math.floor((checkX - this.posx) * slope);
             checkX = Math.floor(checkX)
