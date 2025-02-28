@@ -191,7 +191,7 @@ class gameMap { //class that holds map generation/display data
         }
         this.path.closePath();
 
-        return this.path
+        return finalPoints;
     }
     
     draw(){
