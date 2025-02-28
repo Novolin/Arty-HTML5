@@ -41,27 +41,18 @@ setInterval(gameTick, 50);
  ****************************************************************************/
 
 class gameData { //papa object, handles the game and its logic, holding everything nice and neat like
-    currentTurn;
-    render;
+    currentTurn = 0;
     map;
     things;
-    nextTurn;
-    turnOver;
+    nextTurn = 1;
+    turnOver = false;
 
     constructor(){
         this.currentTurn = 0; //Which turn is going on
         this.map = new gameMap();
-        this.render = new gameRender();
         this.things = [null, null] //this is an array of all the objects that need to be placed on the map, like players, etc.
         this.things[0] = this.spawnCannon(true); //force the player into the first "thing" slot
         this.things[1] = this.spawnCannon(false);
-        this.nextTurn = 1; //what turn will go next.
-        this.turnOver = false; //flag if the turn is ready to change.
-        //for now, just render the map on construction:
-        this.render.drawGeography(this.map.sizex, this.map.sizey, this.map.mapPoints);
-        for (const item in this.things){
-            this.things[item].draw(this.render.cvx);
-        }
     }
 
 
@@ -72,7 +63,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
 
     enableControls(){ //fire upon game/turn start.
         gameWindow.addEventListener("keyup", (fireKeyAction) => {
-            if (gameState == "game"){ //only handle these when we're in "game" mode.
+            if (gameState == "play"){ //only handle these when we're in "game" mode.
                 if (fireKeyAction.key == "ArrowUp"){
                     //increase shot angle
                     this.things[0].angle ++;
@@ -80,20 +71,12 @@ class gameData { //papa object, handles the game and its logic, holding everythi
                     this.things[0].angle --;
                 }
             }
-            this.render.drawGeography(this.map.sizex, this.map.sizey, this.map.mapPoints);
+            this.map.draw()
             for (const item in this.things){
-                this.things[item].draw(this.render.cvx);
+                this.things[item].draw();
             }
             
         });
-
-    /*****************
-     * GAME STARTING *
-     ****************/
-    }
-
-    drawMap(){
-        this.render.drawGeography(this.map.sizex, this.map.sizey, this.map.mapPoints);
     }
 
     spawnCannon(isPlayer){
@@ -131,47 +114,9 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     }
 
     
+    
 }
 
-/* TODO: REWRITE */
-class gameRender { //this class handles all of the rendering functions for the game.
-    canvas;
-    showMap;
-    showMenu;
-    visibleObjects;
-    constructor(){
-        this.canvas = document.getElementById("game").getContext("2d", {willReadFrequently:true});
-    }
-
-    drawGeography(sizex, sizey, geoData) {
-        //Wipe existing screen data:
-        this.canvas.fillStyle = "black";
-        this.canvas.fillRect(0,0,sizex, sizey);
-
-        //draw the geography as a trace:
-        this.canvas.fillStyle = colour_green;
-        this.canvas.strokeStyle = colour_green;
-        this.canvas.beginPath();
-        this.canvas.moveTo(geoData[0][0], geoData[0][1]);
-        let pointCount = 1;
-        while (pointCount < geoData.length){
-            this.canvas.lineTo(geoData[pointCount][0],geoData[pointCount][1]);
-            pointCount ++;
-        }
-        //After drawing the contours, fill the ground:
-        this.canvas.lineTo(sizex, sizey);
-        this.canvas.lineTo(0,sizey);
-        this.canvas.lineTo(geoData[0][0], geoData[0][1]);
-        this.canvas.fill(); 
-    }
-
-    drawObjs(){
-        // Draws every object in our
-        for (const key in this.visibleObjects) {
-            key.draw(this.canvas) // Each object should have its own draw call which requests our canvas
-        }
-    }
-}
 
 class gameMap { //class that holds map generation/display data
     //Attributes
@@ -739,6 +684,9 @@ function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
 
 
 function nextTurn(){
+    if (game == undefined){
+        return false // don't do anything if we don't have a game set.
+    }
     switch (game.nextTurn) {
         case 0: //player next, enable input:
             inputButton.disabled = false;
@@ -808,8 +756,6 @@ function gameTick(){
             game.things[i].draw();
         }
 
-    } else if (game.gameState = "start"){
-        //todo: draw main menu
     }
 }
 function playerFire(){
@@ -820,9 +766,9 @@ function playerFire(){
 function showStartMenu(){
     menu = new gameMenu("BROWSER ARTILLERY", canvasTarget);
     menu.draw();
-    addEventListener("mouseup", parseMouseClick);
+    addEventListener("mouseup", mouseClicked);
 }
-function parseMouseClick(e){
+function mouseClicked(e){
     /* handles clickable stuff */
     if (menu && e.button == 0){
         // for now just output to console because fffff
@@ -831,12 +777,17 @@ function parseMouseClick(e){
                 console.log(key);
                 console.log("CLICKEDEDED IT");
                 console.log(menu.items[key]);
+                gameStart();
                 
             }
         }
     }
 }
 
+function mouseMoved(e){ // Handle highlighting/unhighlighting the play button.
+    /* TODO */
+
+}
 
 
 
