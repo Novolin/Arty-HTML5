@@ -24,11 +24,21 @@ let menu = false;
 let gameState = "start"; // are we looking at the start menu, gameplay or game over menu?
 
 
-const colour_green = `rgba(120,255,80,255)`;
-const colour_red = `rgba(250,0,0,255)`;
-const colour_blue = `rgba(0,0,250,255)`;
+// Define our colours as RGB arrays:
+const groundColour = [120,255,80];
+const playerColour = [250,0,0];
+const enemyColour = [0,0,250];
+const menuColour = [255,255,255];
 
-
+// Create values we can pass to the canvas object
+const groundColourCSS = `rgba(${groundColour[0]},${groundColour[1]},${groundColour[2]},255)`;
+const playerColourCSS = `rgba(${playerColour[0]},${playerColour[1]},${playerColour[2]},255)`;
+const enemyColourCSS = `rgba(${enemyColour[0]},${enemyColour[1]},${enemyColour[2]},255)`;
+const menuColourCSS = `rgba(${menuColour[0]}, ${menuColour[1]}, ${menuColour[2]}, 255)`;
+/**
+ * We create RGB arrays for when we're comparing imageData objects in collision detection
+ * Because the CSS colours are stored as strings, it's harder to access them.
+ */
 
 
 
@@ -39,17 +49,17 @@ setInterval(gameTick, 50);
 class gameData { //papa object, handles the game and its logic, holding everything nice and neat like
     currentTurn = 0;
     map;
+    holes = [];
     things;
-    nextTurn = 1;
     turnOver = false;
-    phyiscsObject = false; // which object should we detect physics on.
+    physicsObject = false; // which object should we detect physics on.
+    playerCannon;
+    enemyCannon;
 
     constructor(){
-        this.currentTurn = 0; //Which turn is going on
         this.map = new gameMap();
-        this.things = [null, null] //this is an array of all the objects that need to be placed on the map, like players, etc.
-        this.things[0] = this.spawnCannon(true); //force the player into the first "thing" slot
-        this.things[1] = this.spawnCannon(false);
+        this.playerCannon = this.spawnCannon(true); //force the player into the first "thing" slot
+        this.enemyCannon = this.spawnCannon(false);
     }
 
 
@@ -76,6 +86,9 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         });
     }
 
+    /*******************
+     * Object Spawning *
+     ******************/
     spawnCannon(isPlayer){
         let spawnX = 0; //first choose an x position in the first/last 20% of the map
         let mapCheck = this.map.mapPoints;
@@ -102,24 +115,77 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         let spawnY = Math.floor(mapCheck[leftPoint][1] +  ((spawnX - mapCheck[leftPoint][0])* cannonSlope)) - 1;
 
         if(isPlayer){
-            return new cannon(true, spawnX, spawnY, "red");
+            return new cannon(true, spawnX, spawnY, playerColourCSS);
         } else {
-            return new cannon(false, spawnX, spawnY, "blue");
+            return new cannon(false, spawnX, spawnY, enemyColourCSS);
         }
     }
 
+    spawnBullet(power, angle, positionX, positionY, fromPlayer){
+        /* Spawns a bullet, adding it to our list of things. 
+        * This also tells the physics code to look at it. */
+        this.physicsObject = length(this.things) // Get the index for our next spawned bullet.
+        this.things.push(new bullet(power, angle, positionX, positionY, fromPlayer))
+
+    }
+
+
+    /***********
+     * Physics *
+     **********/
     physicsTick(){
         /* Run a physics tick on the current physics object. */
         if (this.physicsObject == false){ 
             // just do nothing if there's no active object.
             return false;
         }
-        let nextCollide = this.physicsObject.checkCollide()
+        let nextCollide = this.things[physicsObject].checkCollide()
         if (nextCollide){
             // Should be a reference to a specific pixel? idk yet.
+            console.log(nextCollide);
+            // trigger a turn change
+            this.nextTurn();
+            // i think my turn change code kinda sucks, tbh? but we'll use it until it breaks
         }
     }
-    
+
+    /**************
+     * TURN LOGIC *
+     *************/
+
+    nextTurn(){
+        switch (this.currentTurn) {
+            case 0: //player next, enable input:
+                inputButton.disabled = false;
+                this.currentTurn++;
+                break;
+            case 1: //player bullet
+                inputButton.disabled = true;
+                this.currentTurn++;
+                break;
+            case 2: //AI
+                this.currentTurn++;
+                this.enemyCannon.AIGetAim(); //let the AI do its thing
+                break;
+            default: //AI bullet, but also make any weirdness default to player time.
+                this.currentTurn = 0;
+                break; 
+        }
+    }
+
+    /************
+     * Graphics *
+     ***********/
+    draw(){
+        /* Draws the current game state to the screen. */
+        this.map.draw();
+        this.playerCannon.draw();
+        this.enemyCannon.draw();
+        if (length(this.things) > 0)
+            for (var t in things){
+                this.things[t].draw()
+        }
+    }
 }
 
 
@@ -202,8 +268,8 @@ class gameMap { //class that holds map generation/display data
     draw(){
         /* Draw the map to the canvas object*/
         // Set our colours:
-        canvasTarget.fillStyle = colour_green;
-        canvasTarget.strokeStyle = colour_green;
+        canvasTarget.fillStyle = groundColourCSS;
+        canvasTarget.strokeStyle = groundColourCSS;
         canvasTarget.lineJoin = "round";
         canvasTarget.fill(this.path);
     }
@@ -324,7 +390,20 @@ class bullet extends gameObject {
         this.velx = Math.cos(getRadians(ang)) * pow;
         this.owner = owner; 
     }
-    //Methods
+    
+    checkCollide(){
+        /* Checks if the next frame's position will result in a collision.
+        *  returns the position of the collision, or false if no collision will occur
+        */
+       const nextX = Math.floor(this.posx + this.velx);
+       const nextY = Math.floor(this.posy + this.vely);
+       
+       let nextPosition = canvasTarget.getImageData(nextX, nextY, 1, 1)
+
+    }
+
+
+
     physicsTick(){ //Find where it will be on the next game tick, how fast, etc.
         const nextX = Math.floor(this.posx + this.velx);
         const nextY = Math.floor(this.posy + this.vely);
@@ -436,12 +515,10 @@ class cannon extends gameObject {
         this.lastAng = this.angle;
         this.lastPow = this.power;
         if (this.isPlayer){
-            game.things.push(new bullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer));
+            game.spawnBullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer);
         } else {
-            game.things.push(new bullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer));
+            game.spawnBullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer);
         }
-        
-        game.turnOver = true; //flag the turn as finished
     }
 
     draw(){ //draw the cannon on the screen
@@ -597,7 +674,7 @@ class gameMenu {
 
     draw(){
         // Draw menu and its children
-        canvasTarget.fillStyle = colour_green;
+        canvasTarget.fillStyle = menuColourCSS;
         canvasTarget.font = this.font;
         canvasTarget.textAlign = "center";
         canvasTarget.fillText(this.title_text, 400, 150);
@@ -644,7 +721,7 @@ class menuItem {
 
     draw(){
         //Place the item on the screen
-        canvasTarget.strokeStyle = colour_green;
+        canvasTarget.strokeStyle = menuColourCSS;
         canvasTarget.strokeRect(this.posx, this.posy, this.rectx, this.recty)
         canvasTarget.font = this.font
         canvasTarget.fillText(this.label, this.posx + (this.rectx / 2), this.posy + (this.recty / 2))
@@ -695,34 +772,6 @@ function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
 }
 
 
-function nextTurn(){
-    if (game == undefined){
-        return false // don't do anything if we don't have a game set.
-    }
-    switch (game.nextTurn) {
-        case 0: //player next, enable input:
-            inputButton.disabled = false;
-            game.currentTurn = game.nextTurn;
-            game.nextTurn = 1;
-            break;
-        case 1: //player bullet
-            inputButton.disabled = true;
-            game.currentTurn = game.nextTurn;
-            game.nextTurn = 2;
-            break;
-        case 2: //AI
-            game.currentTurn = game.nextTurn;
-            game.nextTurn = 3;
-            game.things[1].AIGetAim(); //let the AI do its thing
-            break;
-        default: //AI bullet, but also make any weirdness default to player time.
-            game.currentTurn = game.nextTurn;
-            game.nextTurn = 0;
-            break; 
-    }
-
-}
-
 //game setup:
 
 function gameStart(){
@@ -759,10 +808,6 @@ function gameTick(){
             game.things[1].AIGetAim(); //will set turnOver if it leads to firing
         }
 
-        if (game.turnOver){ //trigger a turn change on this frame.
-            game.turnOver = false;
-            nextTurn();
-        }
         //update the player cannon angle
         game.things[0].playerGetAim();
 
