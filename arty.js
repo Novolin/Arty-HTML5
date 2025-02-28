@@ -199,7 +199,7 @@ class gameMap { //class that holds map generation/display data
         // Set our colours:
         canvasTarget.fillStyle = colour_green;
         canvasTarget.strokeStyle = colour_green;
-        canvasTarget.lineJoin("round");
+        canvasTarget.lineJoin = "round";
         canvasTarget.fill(this.path);
     }
 
