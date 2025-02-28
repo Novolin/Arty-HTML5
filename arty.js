@@ -15,7 +15,7 @@ const inputPower = document.getElementById("powerInput");
 const inputAngle = document.getElementById("angleInput");
 const inputButton = document.getElementById("fireInput");
 const canvasContainer = document.getElementById("game"); 
-const canvasTarget = document.getElementById("game").getContext("2d"); // the actual 2d canvas object
+const canvasTarget = document.getElementById("game").getContext("2d", willReadFrequently = true); // the actual 2d canvas object
 
 // game-related objs
 const gravity = 1;
@@ -331,6 +331,7 @@ class bullet extends gameObject {
             checkX = Math.floor(checkX)
             const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
             const targetData = targetBox.data;
+            console.log(targetData) // TEMP: SO I KNOW IF ICAN JUST LOOK FR COLLRRR
             if (targetData[1] == 255) { //if we hit ground, set the detection point as where we did
                 this.posx = checkX;
                 this.posy = checkY;
@@ -339,7 +340,9 @@ class bullet extends gameObject {
                     
                 }
                 return true;
-            } 
+            } else if (targetData == undefined){
+                return true
+            }
         } 
         if (this.velx < 0){
             for (let checkX = this.posx; checkX >= nextX; checkX--){
@@ -716,9 +719,6 @@ function nextTurn(){
 function gameStart(){
     game = new gameData();
     gameState = "play";
-    // blank out the canvas
-    canvasTarget.fillStyle = "black";
-    canvasTarget.fillRect(0,0,800,600);
     menu = undefined; // disable the menu
 }
 
