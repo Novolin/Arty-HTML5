@@ -186,7 +186,7 @@ class gameMap { //class that holds map generation/display data
         // add our points to the path 
         this.path.moveTo(800,600);
         this.path.lineTo(0,600)
-        for (p in finalPoints){
+        for (const p in finalPoints){
             this.path.lineTo(p[0],p[1]);
         }
         this.path.closePath();
