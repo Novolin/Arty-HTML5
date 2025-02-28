@@ -745,7 +745,7 @@ function gameTick(){
 
 
         //Render and collision detection
-        game.drawMap();
+        game.map.draw();
         for (let i = 0; i < game.things.length; i++){
             if (game.things[i].physicsTick()){ //if we collide, replace it with a hole.
                 let nextPos = [game.things[i].posx, game.things[i].posy];
