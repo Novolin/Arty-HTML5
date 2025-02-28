@@ -739,6 +739,9 @@ function gameTick(){
         return;
     }
     if (game){
+        // Blank the screen:
+        canvasTarget.fillStyle = "black";
+        canvasTarget.fillRect(0,0,800,600);
         //purge anything in the shadow realm:
         game.things = game.things.filter((thing) => thing.posx > 0)
 
