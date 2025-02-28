@@ -329,7 +329,7 @@ class bullet extends gameObject {
         for (let checkX = this.posx; checkX <= nextX; checkX++){
             const checkY = this.posy + Math.floor((checkX - this.posx) * slope);
             checkX = Math.floor(checkX)
-            const targetBox = game.render.cvx.getImageData(checkX, checkY,1,1);
+            const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
             const targetData = targetBox.data;
             if (targetData[1] == 255) { //if we hit ground, set the detection point as where we did
                 this.posx = checkX;
@@ -716,6 +716,9 @@ function nextTurn(){
 function gameStart(){
     game = new gameData();
     gameState = "play";
+    // blank out the canvas
+    canvasTarget.fillStyle = "black";
+    canvasTarget.fillRect(0,0,800,600);
     menu = undefined; // disable the menu
 }
 
@@ -782,9 +785,7 @@ function mouseClicked(e){
         // for now just output to console because fffff
         for (const key in menu.items) {
             if (menu.items[key].checkCollide(e.offsetX, e.offsetY)){
-                console.log(key);
-                console.log("CLICKEDEDED IT");
-                console.log(menu.items[key]);
+                // TODO: make this properly check for window scaling.
                 gameStart();
                 
             }
