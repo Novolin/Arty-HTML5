@@ -715,6 +715,7 @@ function nextTurn(){
 
 function gameStart(){
     game = new gameData();
+    gameState = "play";
     menu = undefined; // disable the menu
 }
 
