@@ -721,8 +721,15 @@ function gameStart(){
 
 function gameTick(){
     //execute a logic tick
+
     if (gameState == "start"){ // we are on the "new game" menu
+        if (menu == undefined) {
+            console.log("GAME STATE NOT SET AND MENU NOT DEFINED!")
+            gameState = "error";
+        }
         menu.draw_if_needed();
+    } else if (gameState == "error"){
+        return;
     }
 
     if (game == undefined){
