@@ -29,12 +29,22 @@ const groundColour = [120,255,80];
 const playerColour = [250,0,0];
 const enemyColour = [0,0,250];
 const menuColour = [255,255,255];
+const bgColour = [0,0,0]; // so we can check it more easily.
+const bulletColour = [255,255,255]
+const expColours = [[255, 216, 61],[255, 174, 69],[240, 123, 55],[204, 156, 51]]
 
 // Create values we can pass to the canvas object
 const groundColourCSS = `rgba(${groundColour[0]},${groundColour[1]},${groundColour[2]},255)`;
 const playerColourCSS = `rgba(${playerColour[0]},${playerColour[1]},${playerColour[2]},255)`;
 const enemyColourCSS = `rgba(${enemyColour[0]},${enemyColour[1]},${enemyColour[2]},255)`;
 const menuColourCSS = `rgba(${menuColour[0]}, ${menuColour[1]}, ${menuColour[2]}, 255)`;
+const bulletColourCSS = `rgba(${bulletColour[0]},${bulletColour[1]},${bulletColour[2], 255})`
+const expColoursCSS = [
+    `rgba(${expColours[0][0]},${expColours[0][1]},${expColours[0][2], 255})`,
+    `rgba(${expColours[1][0]},${expColours[1][1]},${expColours[1][2], 255})`,
+    `rgba(${expColours[2][0]},${expColours[2][1]},${expColours[2][2], 255})`,
+    `rgba(${expColours[3][0]},${expColours[3][1]},${expColours[3][2], 255})`,
+    ];
 /**
  * We create RGB arrays for when we're comparing imageData objects in collision detection
  * Because the CSS colours are stored as strings, it's harder to access them.
@@ -43,14 +53,13 @@ const menuColourCSS = `rgba(${menuColour[0]}, ${menuColour[1]}, ${menuColour[2]}
 
 
 //Extablish game ticks, event listener.
-setInterval(gameTick, 50);
+setInterval(gameTick, 30);
 
 
 class gameData { //papa object, handles the game and its logic, holding everything nice and neat like
     currentTurn = 0;
     map;
     holes = [];
-    things;
     turnOver = false;
     physicsObject = false; // which object should we detect physics on.
     playerCannon;
@@ -59,6 +68,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     constructor(){
         this.map = new gameMap();
         this.playerCannon = this.spawnCannon(true); //force the player into the first "thing" slot
+        this.playerCannon.playerGetAim() // ensure we're reading some kind of value for our aim.
         this.enemyCannon = this.spawnCannon(false);
     }
 
@@ -73,15 +83,12 @@ class gameData { //papa object, handles the game and its logic, holding everythi
             if (gameState == "play"){ //only handle these when we're in "game" mode.
                 if (fireKeyAction.key == "ArrowUp"){
                     //increase shot angle
-                    this.things[0].angle ++;
+                    this.playerCannon.angle ++;
                 } else if (fireKeyAction.key == "ArrowDown"){
-                    this.things[0].angle --;
+                    this.playerCannon.angle --;
                 }
             }
-            this.map.draw()
-            for (const item in this.things){
-                this.things[item].draw();
-            }
+            this.map.draw();
             
         });
     }
@@ -122,40 +129,69 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     }
 
     spawnBullet(power, angle, positionX, positionY, fromPlayer){
-        /* Spawns a bullet, adding it to our list of things. 
-        * This also tells the physics code to look at it. */
-        this.physicsObject = length(this.things) // Get the index for our next spawned bullet.
-        this.things.push(new bullet(power, angle, positionX, positionY, fromPlayer))
-
+        /* Spawns a bullet as our physics object, if the slot is free */
+        if (this.physicsObject == false){
+            this.physicsObject = new bullet(power, angle, positionX, positionY, fromPlayer) 
+        }
     }
 
+    digHole(posx, posy, radius){
+        // TODO: add a hole object to the list of holes.
+    }
 
+    spawnBoom(posx, posy){
+        /** Spawns an explosion */
+        this.physicsObject = new explosion(posx, posy, 15);
+    }
     /***********
      * Physics *
      **********/
     physicsTick(){
         /* Run a physics tick on the current physics object. */
-        if (this.physicsObject == false){ 
-            // just do nothing if there's no active object.
-            return false;
-        }
-        let nextCollide = this.things[physicsObject].checkCollide()
+        
+        let nextCollide = this.physicsObject.checkCollide()
+        console.log(nextCollide);
         if (nextCollide){
             // Should be a reference to a specific pixel? idk yet.
-            console.log(nextCollide);
-            // trigger a turn change
-            this.nextTurn();
+            
+
+            /**
+             * TODO: MAKE THIS WORK
+             * --SPAWN THE HOLE AND DO EXPLOD
+             * --IF WE HIT A PLAYER, DO END GAME W/E
+             */ 
+
+            this.physicsObject = false;
+    
+            
             // i think my turn change code kinda sucks, tbh? but we'll use it until it breaks
+        } else {
+            this.physicsObject.physicsTick();
+            if (this.physicsObject.posx > 800 | this.physicsObject.posy < 0 | this.physicsObject.posy > 600){
+                this.physicsObject = false
+            }
         }
+
     }
 
-    /**************
-     * TURN LOGIC *
-     *************/
+    /**********************
+     * TURN / FRAME LOGIC *
+     *********************/
+
+    nextFrame(){
+        // If we have an active physics object, calculate where it needs to go.
+        if (this.physicsObject){
+            this.physicsTick(); 
+        }
+        this.playerCannon.playerGetAim();
+
+        this.draw()
+    }
 
     nextTurn(){
         switch (this.currentTurn) {
             case 0: //player next, enable input:
+                this.playerCannon.playerGetAim(); // update our aim point, just in case i messed it up
                 inputButton.disabled = false;
                 this.currentTurn++;
                 break;
@@ -177,13 +213,19 @@ class gameData { //papa object, handles the game and its logic, holding everythi
      * Graphics *
      ***********/
     draw(){
-        /* Draws the current game state to the screen. */
+        /* Draws the current game state to the screen, after blanking */
+        
+        canvasTarget.fillStyle = "black";
+        canvasTarget.fillRect(0, 0, 800, 600);
         this.map.draw();
         this.playerCannon.draw();
         this.enemyCannon.draw();
-        if (length(this.things) > 0)
-            for (var t in things){
-                this.things[t].draw()
+        if (this.holes.length > 0)
+            for (var t in this.holes){
+                this.holes[t].draw()
+        }
+        if (this.physicsObject){
+            this.physicsObject.draw()
         }
     }
 }
@@ -323,18 +365,20 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
 * 
 */
 class explosion extends gameObject{
-        animFrame;
+        animFrame; // Current animation frame.
+        animLength = 30; // how many frames of expansion/contraction.
         colour;
-        radius;
+        radius = 1;
+        maxradius;
         constructor(posx,posy, radius){
             super(posx, posy);
             this.radius = radius; 
             this.animFrame = 0;
-            this.radius = radius
+            this.maxradius = radius
             
         }
         //methods
-        draw(){ // TODO: make this nice.
+        draw(){ 
     
             canvasTarget.fillStyle = this.colour;
             canvasTarget.strokeStyle = this.colour;
@@ -344,32 +388,25 @@ class explosion extends gameObject{
             canvasTarget.fill();
             canvasTarget.closePath();
         }
+
+        checkCollide(){
+            // Checks if there is an object in our collision radius.
+            // Only cares for the player or opponent
+            if (this.animFrame > this.animLength){
+                return false; // don't report a hit when we're shrinking
+            }
+            // compare with the position of the cannons:
+            if (game.playerCannon.checkCollide(this.posx, this.posy, this.radius)){
+                console.log("PLAYER HIT");
+            } else if (game.enemyCannon.checkCollide(this.posx, this.posy, this.radius)){
+                console.log("ENEMY HIT");
+            }
+
+            
+        }
+
         physicsTick(){
-            //use this to advance the timers/change colours.
-            const expcolours = [`rgb(255,0,0)`, `rgb(255,255,0)`, `rgb(200,128,0)`]
-            if (this.animFrame == 0){ //check on the first go if there's a player in the explosion
-                //inscribe a square in the circle, roughly:
-
-                let checkSq = this.renderer.getImageData(this.posx - Math.ceil((10 * Math.sqrt(2))/ 2), this.posy - Math.ceil((10 * Math.sqrt(2))/ 2), this.posx + Math.ceil((10 * Math.sqrt(2))/ 2), this.posy + Math.ceil((10 * Math.sqrt(2))/ 2));
-                for (let pixdata = 0; pixdata < checkSq.length; pixdata++){
-                    if (checkSq[pixdata][0] == 255){
-                        //if you see a pixel of cannon in one of these, blow it up
-                        game.things[0].alive = false;
-                        
-                    }
-                }
-            }
-            if (this.animFrame < 20){
-                this.animFrame++;
-                //change colours eventually, but for now we're just gonna do an orange
-                this.colour = expcolours[2];
-            } else {
-                //make the hole instead.
-                game.things.push(new groundHole(this.posx, this.posy));
-                this.posx = -100; //GO TO THE SHADOW ZONE
-                game.turnOver = true;
-            }
-
+            
 
             return false;
         }
@@ -380,6 +417,8 @@ class bullet extends gameObject {
     //Attributes
     velx;
     vely;
+    wind = 0; // for now, just dont do wind lmao
+    gravity = 1; // and we can set gravity later i guess.
     terminalVelocity = 50; //cap drop speed
     owner; //did the player fire it?
     //Constructor
@@ -394,88 +433,70 @@ class bullet extends gameObject {
     checkCollide(){
         /* Checks if the next frame's position will result in a collision.
         *  returns the position of the collision, or false if no collision will occur
+        *  Will move object position to the next valid point.
         */
        const nextX = Math.floor(this.posx + this.velx);
        const nextY = Math.floor(this.posy + this.vely);
+       let didCollide = false;
        
-       let nextPosition = canvasTarget.getImageData(nextX, nextY, 1, 1)
+       let nextPosition = canvasTarget.getImageData(nextX, nextY, 1, 1);
+       if (compareColour(nextPosition.data.slice(0,3), bgColour)|compareColour(nextPosition.data.slice(0,3), bulletColour)){
+        return false;
+       } 
+       // We've hit something, find out where:
+       let checkX = this.posx;
+       let checkY = this.posy;
+       let traveled = 1; //  how far we have traveled along the path.
+       let slope = 0
+       if (this.velx != 0){
+        slope = this.vely / this.velx;
+       } else {
+        slope = this.vely
+       }
+       
+       while (didCollide == false){
+            checkX = Math.floor(this.posx) + traveled;
+            if (checkX == nextX){ // if we've gotten to the next X coord, it must be at that point that we collide.
+                didCollide = [nextX, nextY];
+                
+                break; // get tf out of the loop
+            }
+            // Otherwise, we gotta do slope shit to find our result.
+            checkY = Math.floor(this.posy + (traveled / slope)); // round down first
+            nextPosition = canvasTarget.getImageData(checkX, checkY, 1,2); // get both the upper and lower pixels
+            if (!compareColour(nextPosition.data.slice(0,3), bgColour)){ //hit on the first pixel 
+                console.log(compareColour(nextPosition.data.slice(0,3), bgColour))
+                console.log("ASS")
+                didCollide = [checkX, checkY];
+            } else if (!compareColour(nextPosition.data.slice(4,7), bgColour)){ // hit on the second pixel
+                didCollide = [checkX, checkY + 1];
+            }
+            traveled ++;
+       }
+       this.draw()
+       if (didCollide[0] > 800 | didCollide[1] > 600 | didCollide[0] < 0 ){
+        //OOB
+        didCollide = [-100,-100] // TO THE SHADOW REALM
+       }
+       return didCollide; 
 
     }
 
 
 
-    physicsTick(){ //Find where it will be on the next game tick, how fast, etc.
-        const nextX = Math.floor(this.posx + this.velx);
-        const nextY = Math.floor(this.posy + this.vely);
-
-        //check pixels in a line until the landing position
-        const slope = this.vely/this.velx;
-
-        //DEBUG: DRAW BEFORE WE CHECK
-        this.draw();
-
-        for (let checkX = this.posx; checkX <= nextX; checkX++){
-            const checkY = this.posy + Math.floor((checkX - this.posx) * slope);
-            checkX = Math.floor(checkX)
-            const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
-            const targetData = targetBox.data;
-            console.log(targetBox) // TEMP: SO I KNOW IF ICAN JUST LOOK FR COLLRRR
-            if (targetData[1] == 255) { //if we hit ground, set the detection point as where we did
-                this.posx = checkX;
-                this.posy = checkY;
-                if (!this.owner){
-                    game.things[1].lastImpact = [nextX, nextY];
-                    
-                }
-                return true;
-            } else if (targetData == undefined){
-                return true
-            }
-        } 
-        if (this.velx < 0){
-            for (let checkX = this.posx; checkX >= nextX; checkX--){
-                const checkY = this.posy - Math.floor((checkX - this.posx) * slope);
-                const targetBox = canvasTarget.getImageData(checkX, checkY,1,1);
-                const targetData = targetBox.data;
-                console.log(targetBox)
-                if (targetData[1] == 255) { 
-                    // If we hit ground, put the point at the ground/sky transition.
-
-                    this.posx = checkX;
-                    this.posy = checkY;
-                    if (!this.owner){
-                        game.things[1].lastImpact = [nextX, nextY];
-                        console.log(checkX, checkY)
-                    }
-                    return true;
-                } 
-            } 
-            
-        } 
-        if (nextX > 800 || nextX < 0 || nextY > 600){ //if we go out of bounds, send the object to the shadow realm. 
-            if (!this.owner){
-                game.things[1].lastImpact = [nextX, nextY];
-            }
-            this.posx = -100
-            this.posy = -100
-            game.turnOver = true; //end the turn
-            return true; 
-        }
-        this.posx = nextX;
-        this.posy = nextY;
-        
-        //recalculate velocity, using gravity and wind (tbd)
-        this.vely += gravity;
+    physicsTick(){ // move to the next position
+        this.posx += this.velx;
+        this.velx = this.velx + this.wind;
+        this.posy += this.vely;
+        this.vely +=  this.gravity;
+        console.log(this.vely)
         if (this.vely > this.terminalVelocity){
             this.vely = this.terminalVelocity;
         }
-
-        return false;
-
     }
 
     draw(){
-        canvasTarget.fillStyle = `rgb(200,200,0)`;
+        canvasTarget.fillStyle = bulletColourCSS;
         canvasTarget.fillRect(this.posx, this.posy, 4,4) //make a circle later
     }
     
@@ -493,6 +514,7 @@ class cannon extends gameObject {
     lastPow = 0;
     lastImpact = [0,0];
     nextAngleSet = false;
+    radius = 10;
     //constructor
     constructor(isPlayer, posx, posy, colour){ 
         super(posx, posy);
@@ -512,13 +534,16 @@ class cannon extends gameObject {
     } 
     //methods
     fire(){
+        if (this.isPlayer){
+            this.playerGetAim()
+            game.spawnBullet(this.power, this.angle, (this.posx + (25 * Math.cos(getRadians(this.angle)))), (this.posy - (25 * Math.sin(getRadians(this.angle)))),this.isPlayer);
+        } else {
+            this.AIGetAim()
+            game.spawnBullet(this.power, this.angle, (this.posx + (25 * Math.cos(getRadians(this.angle)))), (this.posy - (25 * Math.sin(getRadians(this.angle)))),this.isPlayer);
+        }
         this.lastAng = this.angle;
         this.lastPow = this.power;
-        if (this.isPlayer){
-            game.spawnBullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer);
-        } else {
-            game.spawnBullet(this.power, this.angle, (this.posx + (20 * Math.cos(getRadians(this.angle)))), (this.posy - (20 * Math.sin(getRadians(this.angle)))),this.isPlayer);
-        }
+        
     }
 
     draw(){ //draw the cannon on the screen
@@ -528,7 +553,7 @@ class cannon extends gameObject {
             canvasTarget.lineWidth = 1;
             canvasTarget.beginPath();
             canvasTarget.moveTo(this.posx, this.posy);
-            canvasTarget.arc(this.posx, this.posy, 10,Math.PI,3.14);
+            canvasTarget.arc(this.posx, this.posy, this.radius, Math.PI,3.14);
             canvasTarget.fill();
             canvasTarget.closePath();
             canvasTarget.lineWidth = "4";
@@ -659,6 +684,21 @@ class cannon extends gameObject {
         this.angle = inputAngle.valueAsNumber;
         this.power = 5 + inputPower.valueAsNumber/4;
     }
+    checkCollide(checkX, checkY, checkRadius){
+        // returns true if this cannon would collide with the given point
+        let distanceX = Math.abs(this.posx - checkX);
+        let distanceY = Math.abs(this.posy - checkY);
+        let radDistance = checkRadius + this.radius;
+        if (distanceX > radDistance | distanceY > radDistance) {
+            return false;
+        }
+        if (Math.sqrt((distanceX ** 2) + (distanceY ** 2)) > radDistance){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }
 //Menu/UI things:
 class gameMenu {
@@ -771,6 +811,17 @@ function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
     }
 }
 
+function compareColour(inputRGB, colour){
+    // Compares the input RGB to the specified colour, either as an RGB array or ref to one.
+    let colcheck = 0;
+    while (colcheck < 3){
+        if (inputRGB[colcheck] != colour[colcheck]){
+            return false
+        }
+        colcheck++;
+    }
+    return true
+}
 
 //game setup:
 
@@ -778,6 +829,7 @@ function gameStart(){
     game = new gameData();
     gameState = "play";
     menu = undefined; // disable the menu
+    game.enableControls()
 }
 
 function gameTick(){
@@ -797,38 +849,12 @@ function gameTick(){
         return;
     }
     if (game){
-        // Blank the screen:
-        canvasTarget.fillStyle = "black";
-        canvasTarget.fillRect(0,0,800,600);
-        //purge anything in the shadow realm:
-        game.things = game.things.filter((thing) => thing.posx > 0)
-
-        //await AI animations
-        if (game.currentTurn == 2){
-            game.things[1].AIGetAim(); //will set turnOver if it leads to firing
-        }
-
-        //update the player cannon angle
-        game.things[0].playerGetAim();
-
-
-        //Render and collision detection
-        game.map.draw();
-        for (let i = 0; i < game.things.length; i++){
-            if (game.things[i].physicsTick()){ //if we collide, replace it with a hole.
-                let nextPos = [game.things[i].posx, game.things[i].posy];
-                game.things[i] = new explosion(nextPos[0], nextPos[1], 0);
-                game.things[i].physicsTick(); //give it a physics tick just to make it work and do collision stuff
-                
-            }
-            game.things[i].draw();
-        }
-
+        game.nextFrame()
     }
 }
 function playerFire(){
     if (game.currentTurn == 0){ //make sure it's the player's turn.
-        game.things[0].fire();
+        game.playerCannon.fire();
     }
 }
 function showStartMenu(){
@@ -844,6 +870,7 @@ function mouseClicked(e){
             if (menu.items[key].checkCollide(e.offsetX, e.offsetY)){
                 // TODO: make this properly check for window scaling.
                 gameStart();
+                removeEventListener("mouseup", mouseClicked)
                 
             }
         }
