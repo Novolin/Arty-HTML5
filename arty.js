@@ -21,7 +21,8 @@ const canvasTarget = document.getElementById("game").getContext("2d", willReadFr
 const gravity = 1;
 let game = false; 
 let menu = false;
-let gameState = "start"; // are we looking at the start menu, gameplay or game over menu?
+let gameState = "menu"; // are we looking at a menu or gameplay?
+const maxExpRadius = 30; // How big should explosions be?
 
 
 // Define our colours as RGB arrays:
@@ -34,6 +35,7 @@ const bulletColour = [255,255,255]
 const expColours = [[255, 216, 61],[255, 174, 69],[240, 123, 55],[204, 156, 51]]
 
 // Create values we can pass to the canvas object
+const bgColourCSS = `rgba(${bgColour[0]},${bgColour[1]},${bgColour[2]},255)`;
 const groundColourCSS = `rgba(${groundColour[0]},${groundColour[1]},${groundColour[2]},255)`;
 const playerColourCSS = `rgba(${playerColour[0]},${playerColour[1]},${playerColour[2]},255)`;
 const enemyColourCSS = `rgba(${enemyColour[0]},${enemyColour[1]},${enemyColour[2]},255)`;
@@ -93,6 +95,9 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         });
     }
 
+    disableControls(){
+        gameWindow.removeEventListener("keyup", fireKeyAction)
+    }
     /*******************
      * Object Spawning *
      ******************/
@@ -136,12 +141,13 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     }
 
     digHole(posx, posy, radius){
-        // TODO: add a hole object to the list of holes.
+        // Add a hole object to the list of holes.
+        this.holes.push(new groundHole(posx, posy, radius));
     }
 
     spawnBoom(posx, posy){
         /** Spawns an explosion */
-        this.physicsObject = new explosion(posx, posy, 15);
+        this.physicsObject = new explosion(posx, posy, maxExpRadius);
     }
     /***********
      * Physics *
@@ -150,26 +156,30 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         /* Run a physics tick on the current physics object. */
         
         let nextCollide = this.physicsObject.checkCollide()
-        console.log(nextCollide);
         if (nextCollide){
-            // Should be a reference to a specific pixel? idk yet.
-            
+            // Should reference the specific pixel.
+            if (this.physicsObject.type == "bullet"){
+                // If we get a collision from a bullet, spawn a boom.
+                this.physicsObject = new explosion(nextCollide[0], nextCollide[1], maxExpRadius)
+            } else if (this.physicsObject.type == "explosion"){
+                if (this.physicsObject.radius <= 0) {
+                    if (!this.playerCannon.alive){
+                        console.log("YOU LOSE")
+                        showEndMenu("LOSER")
+                    } else if (!this.enemyCannon.alive){
+                        showEndMenu("WINRAR")
+                    }
+                }
 
-            /**
-             * TODO: MAKE THIS WORK
-             * --SPAWN THE HOLE AND DO EXPLOD
-             * --IF WE HIT A PLAYER, DO END GAME W/E
-             */ 
-
-            this.physicsObject = false;
-    
+            }
+   
             
             // i think my turn change code kinda sucks, tbh? but we'll use it until it breaks
         } else {
-            this.physicsObject.physicsTick();
-            if (this.physicsObject.posx > 800 | this.physicsObject.posy < 0 | this.physicsObject.posy > 600){
-                this.physicsObject = false
+            if(this.physicsObject.physicsTick()){ // physics ticks should only return true if they are ready to clear the object.
+                this.physicsObject = false;
             }
+            
         }
 
     }
@@ -184,8 +194,13 @@ class gameData { //papa object, handles the game and its logic, holding everythi
             this.physicsTick(); 
         }
         this.playerCannon.playerGetAim();
-
-        this.draw()
+        this.draw();
+        if (this.playerCannon.alive == false){
+            showEndMenu("LOSER")
+        } else if (this.enemyCannon.alive == false){
+            showEndMenu("WINRAR")
+        }
+        
     }
 
     nextTurn(){
@@ -215,7 +230,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     draw(){
         /* Draws the current game state to the screen, after blanking */
         
-        canvasTarget.fillStyle = "black";
+        canvasTarget.fillStyle = bgColourCSS;
         canvasTarget.fillRect(0, 0, 800, 600);
         this.map.draw();
         this.playerCannon.draw();
@@ -325,6 +340,7 @@ class gameObject {
     posx;
     posy;
     renderer;
+    type = "static";
     constructor(posx,posy){
         this.posx = posx;
         this.posy = posy;
@@ -352,36 +368,31 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
     }
     //methods
     draw(){ //destroy the ground at this point, by drawing a black circle over it. 
-        canvasTarget.fillStyle = "black";
-        canvasTarget.strokeStyle = "black";
+        canvasTarget.fillStyle = bgColourCSS;
+        canvasTarget.strokeStyle = bgColourCSS;
         canvasTarget.fill(this.path);
     }
 
 }
 
 
-/* TODO: REWRITE 
-*  Make them grow in size and then shrink
-* 
-*/
 class explosion extends gameObject{
         animFrame; // Current animation frame.
-        animLength = 30; // how many frames of expansion/contraction.
+        animLength = maxExpRadius; // how many frames of expansion/contraction.
         colour;
-        radius = 1;
+        radius = 0;
         maxradius;
+        type;
         constructor(posx,posy, radius){
             super(posx, posy);
-            this.radius = radius; 
             this.animFrame = 0;
             this.maxradius = radius
-            
+            this.type = "explosion";
         }
         //methods
         draw(){ 
     
-            canvasTarget.fillStyle = this.colour;
-            canvasTarget.strokeStyle = this.colour;
+            canvasTarget.fillStyle = expColoursCSS[0];
             canvasTarget.beginPath();
             canvasTarget.moveTo(this.posx, this.posy);
             canvasTarget.arc(this.posx, this.posy, this.radius, 0, 2* Math.PI);
@@ -397,17 +408,29 @@ class explosion extends gameObject{
             }
             // compare with the position of the cannons:
             if (game.playerCannon.checkCollide(this.posx, this.posy, this.radius)){
-                console.log("PLAYER HIT");
+                game.playerCannon.alive = false;
+                return "player";
             } else if (game.enemyCannon.checkCollide(this.posx, this.posy, this.radius)){
-                console.log("ENEMY HIT");
+                game.enemyCannon.alive = false;
+                return "enemy";
             }
 
             
         }
 
         physicsTick(){
-            
-
+            // Increments the growth animation
+            if (this.animFrame < this.animLength){
+                this.radius++;
+            } else if (this.animFrame == this.animLength) {
+                // spawn us a hole
+                game.digHole(this.posx, this.posy, this.radius)
+            } else if (this.radius > 0){
+                this.radius --;
+            } else if (this.radius <= 0){
+                return true; // return true if we are done, so the game obj knows to kill it.
+            }
+            this.animFrame++;
             return false;
         }
     
@@ -428,6 +451,7 @@ class bullet extends gameObject {
         this.vely = -Math.sin(getRadians(ang)) * pow;
         this.velx = Math.cos(getRadians(ang)) * pow;
         this.owner = owner; 
+        this.type = "bullet";
     }
     
     checkCollide(){
@@ -466,7 +490,6 @@ class bullet extends gameObject {
             nextPosition = canvasTarget.getImageData(checkX, checkY, 1,2); // get both the upper and lower pixels
             if (!compareColour(nextPosition.data.slice(0,3), bgColour)){ //hit on the first pixel 
                 console.log(compareColour(nextPosition.data.slice(0,3), bgColour))
-                console.log("ASS")
                 didCollide = [checkX, checkY];
             } else if (!compareColour(nextPosition.data.slice(4,7), bgColour)){ // hit on the second pixel
                 didCollide = [checkX, checkY + 1];
@@ -474,10 +497,6 @@ class bullet extends gameObject {
             traveled ++;
        }
        this.draw()
-       if (didCollide[0] > 800 | didCollide[1] > 600 | didCollide[0] < 0 ){
-        //OOB
-        didCollide = [-100,-100] // TO THE SHADOW REALM
-       }
        return didCollide; 
 
     }
@@ -489,10 +508,13 @@ class bullet extends gameObject {
         this.velx = this.velx + this.wind;
         this.posy += this.vely;
         this.vely +=  this.gravity;
-        console.log(this.vely)
         if (this.vely > this.terminalVelocity){
             this.vely = this.terminalVelocity;
         }
+        if (this.posx > 800 | this.posx < 0 | this.posy > 600){
+            return true; // we are OOB, tell the game to clear the obj
+        }
+        return false; // let us live
     }
 
     draw(){
@@ -795,21 +817,6 @@ function getRadians(angle){
     return angle * (Math.PI / 180);
 }
 // Collision: 
-function checkCollideCircle(pointX, pointY, circleX, circleY, radius){
-    /* 
-    Checks if a point at (pointX, pointY) falls within a circle of radius at (circleX, circleY)
-    */
-    let distanceX = Math.abs(circleX - pointX);
-    let distanceY = Math.abs(circleY - pointY);
-    if (distanceX > radius | distanceY > radius) {
-        return false;
-    }
-    if (Math.sqrt((distanceX ** 2) + (distanceY ** 2)) > radius){
-        return false;
-    } else {
-        return true;
-    }
-}
 
 function compareColour(inputRGB, colour){
     // Compares the input RGB to the specified colour, either as an RGB array or ref to one.
@@ -835,7 +842,7 @@ function gameStart(){
 function gameTick(){
     //execute a logic tick
 
-    if (gameState == "start"){ // we are on the "new game" menu
+    if (gameState == "menu"){ // we are on the "new game" menu
         if (menu == undefined) {
             console.log("GAME STATE NOT SET AND MENU NOT DEFINED!")
             gameState = "error";
@@ -861,6 +868,15 @@ function showStartMenu(){
     menu = new gameMenu("BROWSER ARTILLERY", canvasTarget);
     menu.draw();
     addEventListener("mouseup", mouseClicked);
+}
+
+function showEndMenu(text){
+    gameState = "menu"
+    menu = new gameMenu(text, canvasTarget);
+    addEventListener("mouseup", mouseClicked)
+    canvasTarget.fillStyle = bgColourCSS;
+    canvasTarget.fillRect(200,250,300,250)
+    menu.draw();
 }
 function mouseClicked(e){
     /* handles clickable stuff */
