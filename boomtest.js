@@ -8,17 +8,19 @@ let rgb = [0,0,0]
 let rgbcss = `rgba(0,0,0,255)`;
 let docycle = false;
 let step = 0;
-
+greenstartbox.value = 255
+redstartbox.value = 255
+canv.fillstyle = "black";
+canv.fillRect(0,0,200,200);
+canv.fillstyle = `rgba(0,210,0,255)`;
+canv.fillRect(0,100,200,100);
 
 setInterval(runThingy, 30);
 
-function startThingy(startrgb){
-    canv.fillstyle = "black";
-    canv.fillRect(0,0,200,200);
-    canv.fillstyle = `rgba(0,210,0,255)`;
-    canv.fillRect(0,100,200,100);
-    let sred = int(startrgb[0])
-    let sgreen = int(startrgb[1])
+function startThingy(){
+
+    let sred = redstartbox.value
+    let sgreen = greenstartbox.value
     /** Start running the thingy with the R/G values from the boxes */
     rgbcss = `rgba(${sred}, ${sgreen}, 0, 255)`;
     rgb = rgbcss
