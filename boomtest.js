@@ -4,7 +4,7 @@ const canv = document.getElementById("tester").getContext("2d");
 const redstartbox = document.getElementById("redstart");
 const greenstartbox = document.getElementById("greenstart");
 const runbox = document.getElementById("run");
-let rgb = [0,0,0]
+let rgb = [0,0]
 let rgbcss = `rgba(0,0,0,255)`;
 let docycle = false;
 let step = 0;
@@ -22,6 +22,7 @@ function startThingy(){
     let sred = redstartbox.value
     let sgreen = greenstartbox.value
     /** Start running the thingy with the R/G values from the boxes */
+    rgb = [sred, sgreen]
     rgbcss = `rgba(${sred}, ${sgreen}, 0, 255)`;
     step = 0;
     docycle = true
