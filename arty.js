@@ -197,6 +197,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
         }
         this.playerCannon.playerGetAim();
         this.draw();
+        this.nextTurn();
         if (this.playerCannon.alive == false){
             showEndMenu("LOSER")
         } else if (this.enemyCannon.alive == false){
@@ -206,6 +207,7 @@ class gameData { //papa object, handles the game and its logic, holding everythi
     }
 
     nextTurn(){
+        // Checks if it's time for the next turn?
         switch (this.currentTurn) {
             case 0: //player next, enable input:
                 this.playerCannon.playerGetAim(); // update our aim point, just in case i messed it up
