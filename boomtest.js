@@ -17,9 +17,10 @@ function startThingy(startrgb){
     canv.fillRect(0,0,200,200);
     canv.fillstyle = `rgba(0,210,0,255)`;
     canv.fillRect(0,100,200,100);
-
+    let sred = int(startrgb[0])
+    let sgreen = int(startrgb[1])
     /** Start running the thingy with the R/G values from the boxes */
-    rgbcss = `rgba(${startrgb[0]}, ${startrgb[1]}, 0, 255)`;
+    rgbcss = `rgba(${sred}, ${sgreen}, 0, 255)`;
     rgb = rgbcss
     step = 0;
     docycle = true
