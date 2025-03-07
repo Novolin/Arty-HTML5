@@ -1,7 +1,7 @@
 /*********************
  * BROWSER ARTILLERY *
- *       V 0.7       *
- *  THE RE-RENDERING *
+ *       V 0.8       *
+ *  THE RE-TURNING   *
  ********************/
 
 
@@ -135,9 +135,11 @@ class gameData { //papa object, handles the game and its logic, holding everythi
 
     spawnBullet(power, angle, positionX, positionY, fromPlayer){
         /* Spawns a bullet as our physics object, if the slot is free */
+        
         if (this.physicsObject == false){
             this.physicsObject = new bullet(power, angle, positionX, positionY, fromPlayer) 
         }
+        this.currentTurn += 1; // Should always trigger the turn to change to await shot resolution.
     }
 
     digHole(posx, posy, radius){
@@ -208,18 +210,23 @@ class gameData { //papa object, handles the game and its logic, holding everythi
             case 0: //player next, enable input:
                 this.playerCannon.playerGetAim(); // update our aim point, just in case i messed it up
                 inputButton.disabled = false;
-                this.currentTurn++;
+                if (this.physicsObject){ // wait for a physics object to spawn
+                    this.currentTurn++;
+                }
                 break;
             case 1: //player bullet
                 inputButton.disabled = true;
-                this.currentTurn++;
+                if (this.physicsObject == false){
+                    this.currentTurn++;
+                }
                 break;
             case 2: //AI
-                this.currentTurn++;
                 this.enemyCannon.AIGetAim(); //let the AI do its thing
                 break;
             default: //AI bullet, but also make any weirdness default to player time.
-                this.currentTurn = 0;
+                if (this.physicsObject == false){
+                    this.currentTurn = 0;
+                }
                 break; 
         }
     }
