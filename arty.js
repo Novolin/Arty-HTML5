@@ -32,7 +32,7 @@ const enemyColour = [0,0,250];
 const menuColour = [255,255,255];
 const bgColour = [0,0,0]; // so we can check it more easily.
 const bulletColour = [255,255,255]
-const expColours = [[235, 55, 15],[255, 174, 20],[240, 123, 55],[204, 120, 8]]
+const expColours = [[235, 155, 0],[255, 174, 20],[240, 123, 55],[204, 120, 8]]
 
 // Create values we can pass to the canvas object
 const bgColourCSS = `rgba(${bgColour[0]},${bgColour[1]},${bgColour[2]},255)`;
