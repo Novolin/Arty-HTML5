@@ -29,11 +29,11 @@ function startThingy(){
 function runThingy(){
     if (docycle){
         step += 1
-        rgb[0] = 128 + step
+        rgb[0] += step
         if (rgb[0] > 255){
             rgb[0] = 255
         }
-        rgb[1] = 255 - step
+        rgb[1] -= step
         if (rgb[1] < 0){
             rgb[1] = 0
         }
