@@ -13,7 +13,7 @@ redstartbox.value = 255
 canv.fillstyle = "black";
 canv.fillRect(0,0,200,200);
 canv.fillstyle = `rgba(0,210,0,255)`;
-canv.fillRect(0,100,200,100);
+canv.fillRect(0,0,200,100);
 
 setInterval(runThingy, 30);
 
