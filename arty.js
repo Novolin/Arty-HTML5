@@ -603,7 +603,7 @@ class cannon extends gameObject {
         if (game.currentTurn == 2 && this.nextAngleSet == false){ //only run when it's the AI's turn:
             let luckCheck = randint(0,10);
             //compare shot impact to player position:
-            const shotDelta = [(game.things[0].posx - this.lastImpact[0]),(game.things[0].posy - this.lastImpact[1])];
+            const shotDelta = [(game.playerCannon.posx - this.lastImpact[0]),(game.playerCannon.posy - this.lastImpact[1])];
             let tooLow = true; //vars to determine how to adjust
             let tooShort = true;
             if (shotDelta[0] > 0){ //check if we are short or long
