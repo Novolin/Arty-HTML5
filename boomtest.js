@@ -9,14 +9,15 @@ let rgbcss = `rgba(0,0,0,255)`;
 let docycle = false;
 let step = 0;
 
-canv.fillstyle = "black";
-canv.fillRect(0,0,200,200);
-canv.fillstyle = "green";
-canv.fillRect(0,100,200,100);
 
 setInterval(runThingy, 30);
 
 function startThingy(startrgb){
+    canv.fillstyle = "black";
+    canv.fillRect(0,0,200,200);
+    canv.fillstyle = `rgba(0,210,0,255)`;
+    canv.fillRect(0,100,200,100);
+
     /** Start running the thingy with the R/G values from the boxes */
     rgbcss = `rgba(${startrgb[0]}, ${startrgb[1]}, 0, 255)`;
     rgb = rgbcss
@@ -31,7 +32,12 @@ function runThingy(){
             rgb[0] = 255
         }
         rgb[1] = 255 - step
+        if (rgb[1] < 0){
+            rgb[1] = 0
+        }
         rgbcss = `rgba(${rgb[0]}, ${rgb[1]}, 0, 255)`;
+        canv.fillstyle = rgbcss;
+        canv.fillRect(100,100,100,100)
         if (step > 255){
             docycle = false
         }
