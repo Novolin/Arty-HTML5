@@ -23,7 +23,6 @@ function startThingy(){
     let sgreen = greenstartbox.value
     /** Start running the thingy with the R/G values from the boxes */
     rgbcss = `rgba(${sred}, ${sgreen}, 0, 255)`;
-    rgb = rgbcss
     step = 0;
     docycle = true
 }
