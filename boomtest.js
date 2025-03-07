@@ -22,7 +22,6 @@ function startThingy(startrgb){
     rgb = rgbcss
     step = 0;
     docycle = true
-
 }
 function runThingy(){
     if (docycle){
