@@ -10,9 +10,9 @@ let docycle = false;
 let step = 0;
 greenstartbox.value = 255
 redstartbox.value = 255
-canv.fillstyle = "black";
+canv.fillStyle = "black";
 canv.fillRect(0,0,200,200);
-canv.fillstyle = `rgba(0,210,0,255)`;
+canv.fillStyle = `rgba(0,210,0,255)`;
 canv.fillRect(0,0,200,100);
 
 setInterval(runThingy, 30);
@@ -38,7 +38,7 @@ function runThingy(){
             rgb[1] = 0
         }
         rgbcss = `rgba(${rgb[0]}, ${rgb[1]}, 0, 255)`;
-        canv.fillstyle = rgbcss;
+        canv.fillStyle = rgbcss;
         canv.fillRect(100,100,100,100)
         if (step > 255){
             docycle = false
