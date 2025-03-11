@@ -32,7 +32,7 @@ const enemyColour = [0,0,250];
 const menuColour = [255,255,255];
 const bgColour = [0,0,0]; // so we can check it more easily.
 const bulletColour = [255,255,255]
-const expColours = [[235, 155, 0],[255, 174, 20],[240, 123, 55],[204, 120, 8]]
+const expColour = [80,255,20]
 
 // Create values we can pass to the canvas object
 const bgColourCSS = `rgba(${bgColour[0]},${bgColour[1]},${bgColour[2]},255)`;
@@ -40,13 +40,8 @@ const groundColourCSS = `rgba(${groundColour[0]},${groundColour[1]},${groundColo
 const playerColourCSS = `rgba(${playerColour[0]},${playerColour[1]},${playerColour[2]},255)`;
 const enemyColourCSS = `rgba(${enemyColour[0]},${enemyColour[1]},${enemyColour[2]},255)`;
 const menuColourCSS = `rgba(${menuColour[0]}, ${menuColour[1]}, ${menuColour[2]}, 255)`;
-const bulletColourCSS = `rgba(${bulletColour[0]},${bulletColour[1]},${bulletColour[2], 255})`
-const expColoursCSS = [
-    `rgba(${expColours[0][0]},${expColours[0][1]},${expColours[0][2], 255})`,
-    `rgba(${expColours[1][0]},${expColours[1][1]},${expColours[1][2], 255})`,
-    `rgba(${expColours[2][0]},${expColours[2][1]},${expColours[2][2], 255})`,
-    `rgba(${expColours[3][0]},${expColours[3][1]},${expColours[3][2], 255})`,
-    ];
+const bulletColourCSS = `rgba(${bulletColour[0]},${bulletColour[1]},${bulletColour[2]}, 255)`
+let expColourCSS = `rgba(${expColour[0]},${expColour[1]},${expColour[2]},255)`
 /**
  * We create RGB arrays for when we're comparing imageData objects in collision detection
  * Because the CSS colours are stored as strings, it's harder to access them.
@@ -388,7 +383,8 @@ class groundHole extends gameObject { //holes are counted as a type of object, s
 class explosion extends gameObject{
         animFrame; // Current animation frame.
         animLength = maxExpRadius; // how many frames of expansion/contraction.
-        colour;
+        colour = expColour; // bare RGB tuple
+        cssColour; // the colour in CSS form
         radius = 0;
         maxradius;
         type;
@@ -398,10 +394,19 @@ class explosion extends gameObject{
             this.maxradius = radius
             this.type = "explosion";
         }
-        //methods
+        
+        updateColour(){
+            if (this.animFrame > this.maxradius){
+                // We only want to change things while it's shrinking
+                this.colour[0] ++;
+                this.colour[1] --;
+            }
+            this.cssColour = `rgba(${this.colour[0]}, ${this.colour[1]}, 20, 255)`
+        }
+
         draw(){ 
-    
-            canvasTarget.fillStyle = expColoursCSS[0];
+            this.updateColour()
+            canvasTarget.fillStyle = this.colour;
             canvasTarget.beginPath();
             canvasTarget.moveTo(this.posx, this.posy);
             canvasTarget.arc(this.posx, this.posy, this.radius, 0, 2* Math.PI);
