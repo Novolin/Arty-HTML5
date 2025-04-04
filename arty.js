@@ -631,7 +631,7 @@ class cannon extends gameObject {
                 //if we're below and past the target, we can drop power or  change the angle
 
                 //check if we're above the target:
-                if (game.things[0].posy < this.posy){
+                if (game.playerCannon.posy < this.posy){
                     //if we are, prefer lowering power
                     coinToss[1] += 5; 
                 }
